@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+pydantic
+transformers
+accelerate
+sentence-transformers
+faiss-cpu
+rank_bm25
+pypdf
+numpy
+pandas
+openpyxl
+# torch — install the correct build separately first:
+#   GPU:  pip install torch --index-url https://download.pytorch.org/whl/cu121
+#   CPU:  pip install torch --index-url https://download.pytorch.org/whl/cpu
