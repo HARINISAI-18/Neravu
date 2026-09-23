@@ -1,4 +1,3 @@
-
 {
   "expo": {
     "name": "PM-JAY Assistant",
@@ -7,6 +6,12 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "backgroundColor": "#0c4a6e",
-    "web": { "bundler": "metro", "output": "single" }
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-audio"
+    ]
   }
 }

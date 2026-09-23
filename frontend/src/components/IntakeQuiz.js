@@ -1,17 +1,91 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { C, S } from '../theme';
+import SpeakerButton from './SpeakerButton';
+import MicButton from './MicButton';
 
-export default function IntakeQuiz({ questions, onDone, onSkip, disabled }) {
+// ---- UI chrome strings (questions/options come localized from the backend) ----
+// Languages without an entry here gracefully fall back to English chrome.
+
+
+const UI = {
+  en: {
+    title: 'Patient intake — find matching schemes',
+    skip: 'Skip',
+    step: 'Step', question: 'Question',
+    multiHint: '(select all that apply)',
+    optionsLabel: 'Options:',
+    back: '← Back', skipQ: 'Skip question',
+    next: 'Next →', finish: 'Find my schemes',
+    placeholder: '…or type your state/city',
+    hint: 'Your answers are used only to match suitable schemes — you can chat right after.',
+  },
+  hi: {
+    title: 'रोगी जानकारी — मिलान योजनाएँ खोजें',
+    skip: 'छोड़ें',
+    step: 'चरण', question: 'प्रश्न',
+    multiHint: '(लागू होने वाले सभी विकल्प चुनें)',
+    optionsLabel: 'विकल्प:',
+    back: '← वापस', skipQ: 'यह प्रश्न छोड़ें',
+    next: 'आगे →', finish: 'मेरी योजनाएँ खोजें',
+    placeholder: '…या अपना राज्य/शहर लिखें',
+    hint: 'आपके उत्तर सिर्फ़ उपयुक्त योजनाएँ सुझाने के लिए उपयोग होते हैं — इसके बाद आप सीधे चैट कर सकते हैं।',
+  },
+  mr: {
+    title: 'रुग्ण माहिती — जुळण्या योजना शोधा',
+    skip: 'वगळा',
+    step: 'टप्पा', question: 'प्रश्न',
+    multiHint: '(लागू होणारे सर्व पर्याय निवडा)',
+    optionsLabel: 'पर्याय:',
+    back: '← मागे', skipQ: 'हा प्रश्न वगळा',
+    next: 'पुढे →', finish: 'माझ्या योजना शोधा',
+    placeholder: '…किंवा तुमचे राज्य/शहर लिहा',
+    hint: 'तुमची उत्तरे फक्त योग्य योजना सुचवण्यासाठी वापरली जातात — नंतर तुम्ही लगेच चॅट करू शकता.',
+  },
+};
+
+export default function IntakeQuiz({ questions, onDone, onSkip, disabled, lang = 'en' }) {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [sel, setSel] = useState([]);          // multi-select buffer
+  const [sel, setSel] = useState([]);          // multi-select buffer (display strings)
   const [text, setText] = useState('');        // free-text buffer (state question)
   const [busy, setBusy] = useState(false);
 
   const q = questions[idx];
+  const t = useCallback((key) => (UI[lang] && UI[lang][key]) || UI.en[key], [lang]);
 
-  useEffect(() => { setSel([]); setText(''); }, [idx]);
+  // Display option -> English option value (matcher expects English strings).
+  // Falls back to the display string if backend didn't send options_en.
+  const toValue = useCallback((displayOpt) => {
+    if (!q?.options_en?.length) return displayOpt;
+    const i = q.options.indexOf(displayOpt);
+    return i >= 0 ? q.options_en[i] : displayOpt;
+  }, [q]);
+
+  // (Re)build the buffers when the question changes.
+  // Going Back now RESTORES your previous answer instead of wiping it.
+  useEffect(() => {
+    const qn = questions[idx];
+    if (!qn) return;
+    const prev = answers[qn.id];
+    if (prev == null) { setSel([]); setText(''); return; }
+    if (qn.freeText) {
+      setSel([]); setText(prev[0] || '');
+    } else {
+      setSel(prev.map(v => {
+        const i = qn.options_en?.indexOf(v);
+        return (i >= 0 && i < qn.options.length) ? qn.options[i] : v;
+      }));
+      setText('');
+    }
+  }, [idx]);
+
+  // Spoken version of the question (question + options) for the 🔊 button
+  const speakText = useMemo(() => {
+    if (!q) return '';
+    const opts = q.options?.length ? ` ${t('optionsLabel')} ${q.options.join(', ')}.` : '';
+    return `${q.q}. ${q.multi ? `${t('multiHint')} ` : ''}${opts}`;
+  }, [q, lang, t]);
 
   const finish = useCallback(async (all) => {
     setBusy(true);
@@ -30,7 +104,7 @@ export default function IntakeQuiz({ questions, onDone, onSkip, disabled }) {
     if (q.multi) {
       setSel(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt]);
     } else {
-      record([opt]);
+      record([toValue(opt)]);          // ← English value stored
     }
   };
 
@@ -42,8 +116,8 @@ export default function IntakeQuiz({ questions, onDone, onSkip, disabled }) {
   return (
     <View style={st.wrap}>
       <View style={st.headRow}>
-        <Text style={st.headTitle}>Patient intake — find matching schemes</Text>
-        <Pressable onPress={onSkip} hitSlop={8}><Text style={st.skip}>Skip</Text></Pressable>
+        <Text style={st.headTitle}>{t('title')}</Text>
+        <Pressable onPress={onSkip} hitSlop={8}><Text style={st.skip}>{t('skip')}</Text></Pressable>
       </View>
 
       <View style={st.progressBg}>
@@ -51,12 +125,15 @@ export default function IntakeQuiz({ questions, onDone, onSkip, disabled }) {
                       { width: `${Math.round((idx / questions.length) * 100)}%` }]} />
       </View>
       <Text style={st.meta}>
-        Step {q.step} · {q.stepName} · Question {idx + 1} of {questions.length}
+        {t('step')} {q.step} · {q.stepName} · {t('question')} {idx + 1}/{questions.length}
       </Text>
 
-      <Text style={st.q}>
-        {q.q}{q.multi ? '  (select all that apply)' : ''}
-      </Text>
+      <View style={st.qRow}>
+        <Text style={st.q}>
+          {q.q}{q.multi ? `  ${t('multiHint')}` : ''}
+        </Text>
+        <SpeakerButton text={speakText} lang={lang} size={22} />
+      </View>
 
       <ScrollView style={st.optionsScroll} nestedScrollEnabled>
         <View style={st.options}>
@@ -73,44 +150,46 @@ export default function IntakeQuiz({ questions, onDone, onSkip, disabled }) {
       </ScrollView>
 
       {q.freeText && (
-        <TextInput
-          style={st.input}
-          value={text}
-          onChangeText={setText}
-          placeholder="…or type your state/city"
-          placeholderTextColor={C.muted}
-          editable={!disabled && !busy}
-          onSubmitEditing={() => text.trim() && record([text.trim()])}
-        />
+        <View style={st.inputRow}>
+          <TextInput
+            style={st.input}
+            value={text}
+            onChangeText={setText}
+            placeholder={t('placeholder')}
+            placeholderTextColor={C.muted}
+            editable={!disabled && !busy}
+            onSubmitEditing={() => text.trim() && record([text.trim()])}
+          />
+          {/* hold-to-talk → transcribed text lands in the input */}
+          <MicButton onText={(t2) => setText(t2)} />
+        </View>
       )}
 
       <View style={st.btnRow}>
         {idx > 0 && (
           <Pressable style={st.backBtn} onPress={back} disabled={busy}>
-            <Text style={st.backText}>← Back</Text>
+            <Text style={st.backText}>{t('back')}</Text>
           </Pressable>
         )}
         {q.optional && (
           <Pressable style={st.backBtn} onPress={skipQ} disabled={busy}>
-            <Text style={st.backText}>Skip question</Text>
+            <Text style={st.backText}>{t('skipQ')}</Text>
           </Pressable>
         )}
         {(q.multi || q.freeText) && (
           <Pressable
             style={[st.nextBtn, busy && st.optDisabled]}
             onPress={() => (q.multi
-              ? sel.length && record(sel)
+              ? sel.length && record(sel.map(toValue))     // ← English values stored
               : text.trim() && record([text.trim()]))}
             disabled={busy || (q.multi ? !sel.length : !text.trim())}>
             <Text style={st.nextText}>
-              {idx + 1 >= questions.length ? 'Find my schemes' : 'Next →'}
+              {idx + 1 >= questions.length ? t('finish') : t('next')}
             </Text>
           </Pressable>
         )}
       </View>
-      <Text style={st.hint}>
-        Your answers are used only to match suitable schemes — you can chat right after.
-      </Text>
+      <Text style={st.hint}>{t('hint')}</Text>
     </View>
   );
 }
@@ -124,7 +203,8 @@ const st = StyleSheet.create({
   progressBg: { height: 5, backgroundColor: '#e2e8f0', borderRadius: 3, marginTop: 12 },
   progressFill: { height: 5, backgroundColor: C.primary, borderRadius: 3 },
   meta: { fontSize: 11, color: C.muted, marginTop: 6 },
-  q: { fontSize: 16, fontWeight: '700', color: C.text, marginTop: 12, lineHeight: 22 },
+  qRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 12 },
+  q: { fontSize: 16, fontWeight: '700', color: C.text, lineHeight: 22, flex: 1, paddingRight: 8 },
   optionsScroll: { maxHeight: 220, marginTop: 12 },
   options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingBottom: 4 },
   opt: { borderWidth: 1, borderColor: '#bae6fd', backgroundColor: '#f8fafc',
@@ -133,8 +213,9 @@ const st = StyleSheet.create({
   optDisabled: { opacity: 0.5 },
   optText: { fontSize: 13, color: C.text },
   optTextOn: { color: C.badgeText, fontWeight: '700' },
-  input: { borderWidth: 1, borderColor: C.border, borderRadius: 10, paddingHorizontal: 12,
-           paddingVertical: 10, fontSize: 14, color: C.text, marginTop: 12 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12 },
+  input: { flex: 1, borderWidth: 1, borderColor: C.border, borderRadius: 10,
+           paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: C.text },
   btnRow: { flexDirection: 'row', gap: 10, marginTop: 16, alignItems: 'center',
             flexWrap: 'wrap' },
   backBtn: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10,

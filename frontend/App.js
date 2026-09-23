@@ -7,21 +7,29 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-
 import { C, S } from './src/theme';
 import {
   loadConfig, fetchHealth, fetchSuggestions, ask, resetConversation,
-  getIntakeQuestions, matchIntake,
+  getIntakeQuestions, matchIntake, saveLangPref,
 } from './src/api';
 import MessageItem from './src/components/MessageItem';
 import TypingBubble from './src/components/TypingBubble';
 import SettingsModal from './src/components/SettingsModal';
 import IntakeQuiz from './src/components/IntakeQuiz';
+import MicButton from './src/components/MicButton';
 
 let nextId = 1;
 
 const INTAKE_DONE_KEY = '@pmjay/intakeDone';
 const PROFILE_KEY = '@pmjay/profileSummary';
+const LANG_KEY = '@pmjay/lang';
+
+// must match backend SUPPORTED_LANGS
+const LANGS = [
+  { code: 'en', label: 'English', short: 'EN' },
+  { code: 'hi', label: 'हिन्दी', short: 'हि' },
+  { code: 'mr', label: 'मराठी', short: 'म' },
+];
 
 function friendlyError(e) {
   if (e?.timeout)
@@ -34,9 +42,8 @@ function friendlyError(e) {
 }
 
 export default function App() {
-  // screen: 'loading' -> 'quiz' -> 'chat'   (quiz gates the chat)
   const [screen, setScreen] = useState('loading');
-  const [msgs, setMsgs] = useState([]);          // newest FIRST (inverted FlatList)
+  const [msgs, setMsgs] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [health, setHealth] = useState(null);
@@ -46,35 +53,52 @@ export default function App() {
 
   const [intakeQ, setIntakeQ] = useState(null);
   const [profileSummary, setProfileSummary] = useState('');
+  const [matchData, setMatchData] = useState(null);
+
+  const [lang, setLang] = useState('en');
 
   const askRef = useRef(null);
-  const screenRef = useRef(screen);
-  screenRef.current = screen;
 
   const addMessage = useCallback(m => setMsgs(prev => [m, ...prev]), []);
 
-  /* ---------- load config on mount ---------- */
+  /* ---------- load config + saved lang/profile on mount ---------- */
   useEffect(() => {
     (async () => {
       await loadConfig();
+      try {
+        const [l, done, prof] = await Promise.all([
+          AsyncStorage.getItem(LANG_KEY),
+          AsyncStorage.getItem(INTAKE_DONE_KEY),
+          AsyncStorage.getItem(PROFILE_KEY),
+        ]);
+        if (l) setLang(l);
+        if (prof) setProfileSummary(prof);
+        if (done !== '1') setScreen('lang');   // first run → language gate
+      } catch { }
     })();
   }, []);
 
-  /* ---------- health polling: stops when ready; resumes on app focus ---------- */
+  /* ---------- health polling (lang-aware) ---------- */
   useEffect(() => {
     let alive = true, timer, stopped = false;
 
     const loadExtras = async () => {
       try {
-        const d = await fetchSuggestions();
+        const d = await fetchSuggestions(lang);
         if (alive) setSuggestions(d.questions || []);
       } catch { }
       try {
-        const iq = await getIntakeQuestions();
+        const iq = await getIntakeQuestions(lang);
         if (alive && iq.questions?.length) {
           setIntakeQ(iq.questions);
-          // gate: only force the quiz if the user hasn't chosen a screen yet
-          setScreen(prev => (prev === 'loading' ? 'quiz' : prev));
+          // ★ FIX 2: await the storage read BEFORE calling setScreen —
+          // state updaters must be synchronous, never return a Promise
+          try {
+            const done = await AsyncStorage.getItem(INTAKE_DONE_KEY);
+            setScreen(prev => (prev === 'loading' ? (done === '1' ? 'chat' : 'quiz') : prev));
+          } catch {
+            setScreen(prev => (prev === 'loading' ? 'quiz' : prev));
+          }
         }
       } catch { }
     };
@@ -101,22 +125,18 @@ export default function App() {
     loop();
 
     const onFocus = () => { if (!stopped) { clearTimeout(timer); loop(); } };
-
     let appSub;
-    if (Platform.OS === 'web') {
-      window.addEventListener('focus', onFocus);
-    } else {
-      appSub = AppState.addEventListener('change', s => { if (s === 'active') onFocus(); });
-    }
+    if (Platform.OS === 'web') window.addEventListener('focus', onFocus);
+    else appSub = AppState.addEventListener('change', s => { if (s === 'active') onFocus(); });
 
     return () => {
       stopped = true; alive = false; clearTimeout(timer);
       appSub?.remove?.();
       if (Platform.OS === 'web') window.removeEventListener('focus', onFocus);
     };
-  }, [reloadKey]);
+  }, [reloadKey, lang]);
 
-  /* ---------- send / cancel (carries the patient profile) ---------- */
+  /* ---------- send (carries lang + profile, stores speech/suggestions) ---------- */
   const send = useCallback((text) => {
     const q = (text ?? input).trim();
     if (!q || sending || !health?.ready) return;
@@ -126,21 +146,24 @@ export default function App() {
     addMessage({ id: ++nextId, role: 'user', text: q });
     setSending(true);
 
-    const { promise, cancel } = ask(q, profileSummary);
+    const { promise, cancel } = ask(q, lang, profileSummary);
     askRef.current = { cancel };
 
     promise
-      .then(d => addMessage({
-        id: ++nextId, role: 'assistant',
-        text: d.answer, intents: d.intents, sources: d.sources,
-      }))
+      .then(d => {
+        addMessage({
+          id: ++nextId, role: 'assistant',
+          text: d.answer, intents: d.intents, sources: d.sources,
+          speech: d.speech, mlang: d.lang || lang,
+        });
+        if (d.suggestions?.length) setSuggestions(d.suggestions);
+      })
       .catch(e => addMessage({ id: ++nextId, role: 'error', text: friendlyError(e) }))
       .finally(() => { setSending(false); askRef.current = null; });
-  }, [input, sending, health, profileSummary, addMessage]);
+  }, [input, sending, health, lang, profileSummary, addMessage]);
 
   const cancel = useCallback(() => askRef.current?.cancel(), []);
 
-  /* ---------- Enter sends on web; Shift+Enter = newline ---------- */
   const onKeyDown = useCallback((e) => {
     if (Platform.OS === 'web' && e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -148,25 +171,28 @@ export default function App() {
     }
   }, [send]);
 
-  /* ---------- intake done → scheme list + REDIRECT to chat ---------- */
+  /* ---------- intake done → RESULTS screen ---------- */
   const handleIntakeDone = useCallback(async (answers) => {
     try {
-      const r = await matchIntake(answers);
+      const r = await matchIntake(answers, lang);
+      setMatchData(r);
       setProfileSummary(r.profile || '');
       AsyncStorage.setItem(INTAKE_DONE_KEY, '1').catch(() => { });
       AsyncStorage.setItem(PROFILE_KEY, r.profile || '').catch(() => { });
       addMessage({
         id: ++nextId, role: 'assistant',
         text: r.answer, intents: ['scheme-match'], sources: [],
+        speech: r.speech, mlang: lang,
       });
+      setScreen('results');
     } catch (e) {
       addMessage({
         id: ++nextId, role: 'error',
-        text: 'Could not match schemes: ' + (e?.message || 'unknown')
+        text: 'Could not match schemes: ' + (e?.message || 'unknown'),
       });
+      setScreen('chat');
     }
-    setScreen('chat');   // ← redirect to the chatbot
-  }, [addMessage]);
+  }, [lang, addMessage]);
 
   const skipIntake = useCallback(() => {
     AsyncStorage.setItem(INTAKE_DONE_KEY, '1').catch(() => { });
@@ -177,19 +203,32 @@ export default function App() {
     if (intakeQ?.length) setScreen('quiz');
   }, [intakeQ]);
 
-  /* ---------- new chat: clear everything + back to the quiz ---------- */
   const newChat = useCallback(async () => {
     askRef.current?.cancel();
     setMsgs([]);
     setInput('');
     setProfileSummary('');
+    setMatchData(null);
     AsyncStorage.removeItem(INTAKE_DONE_KEY).catch(() => { });
     AsyncStorage.removeItem(PROFILE_KEY).catch(() => { });
     await resetConversation();
     if (intakeQ?.length) setScreen('quiz');
   }, [intakeQ]);
 
-  /* ---------- stable FlatList callbacks ---------- */
+  /* ---------- language switching ---------- */
+  const chooseLang = useCallback((code) => {
+    setLang(code);
+    saveLangPref(code);
+    setScreen('loading');          // health loop routes to quiz/chat when ready
+  }, []);
+
+  const cycleLang = useCallback(() => {
+    const i = LANGS.findIndex(l => l.code === lang);
+    const next = LANGS[(i + 1) % LANGS.length].code;
+    setLang(next);
+    saveLangPref(next);
+  }, [lang]);
+
   const renderItem = useCallback(({ item }) => <MessageItem item={item} />, []);
   const keyExtractor = useCallback(item => String(item.id), []);
 
@@ -214,12 +253,12 @@ export default function App() {
         style={st.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Header (always visible) */}
         <View style={st.header}>
           <View style={st.flex1}>
             <Text style={st.title}>PM-JAY Assistant</Text>
             <Text style={[st.statusText, status.cls]} numberOfLines={1}>{status.text}</Text>
           </View>
+
           {screen === 'chat' && (
             <>
               <Pressable onPress={reopenIntake} hitSlop={8} style={st.newBtn}>
@@ -230,12 +269,35 @@ export default function App() {
               </Pressable>
             </>
           )}
+
+          {/* language cycle button, always visible */}
+          <Pressable onPress={cycleLang} hitSlop={8} style={st.newBtn}>
+            <Text style={st.newBtnText}>
+              {LANGS.find(l => l.code === lang)?.short}
+            </Text>
+          </Pressable>
+
           <Pressable onPress={() => setSettingsOpen(true)} hitSlop={10}>
             <Text style={st.gear}>⚙️</Text>
           </Pressable>
         </View>
 
-        {/* ============ SCREEN: QUIZ (gate — chat hidden) ============ */}
+        {/* ============ SCREEN: LANGUAGE GATE ============ */}
+        {screen === 'lang' && (
+          <View style={st.center}>
+            <Text style={st.langTitle}>Choose your language</Text>
+            <Text style={st.langSub}>भाषा चुनें · भाषा निवडा</Text>
+            <View style={st.langRow}>
+              {LANGS.map(l => (
+                <Pressable key={l.code} style={st.langBtn2} onPress={() => chooseLang(l.code)}>
+                  <Text style={st.langBtn2Text}>{l.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* ============ SCREEN: QUIZ ============ */}
         {screen === 'quiz' && intakeQ && (
           <ScrollView style={st.flex} contentContainerStyle={st.quizWrap}
             keyboardShouldPersistTaps="handled">
@@ -248,16 +310,28 @@ export default function App() {
                 and more) — then you can ask anything in the chat.
               </Text>
               <IntakeQuiz
+                key={lang}
                 questions={intakeQ}
                 onDone={handleIntakeDone}
                 onSkip={skipIntake}
                 disabled={sending}
+                lang={lang}
               />
             </View>
           </ScrollView>
         )}
 
-        {/* ============ SCREEN: LOADING (backend starting) ============ */}
+        {/* ============ SCREEN: RESULTS ============ */}
+        {screen === 'results' && matchData && (
+          <ResultsScreen
+            data={matchData}
+            lang={lang}
+            onRetake={reopenIntake}
+            onChat={() => setScreen('chat')}
+          />
+        )}
+
+        {/* ============ SCREEN: LOADING ============ */}
         {screen === 'loading' && (
           <View style={st.center}>
             <Text style={st.loadingTxt}>
@@ -269,15 +343,13 @@ export default function App() {
         {/* ============ SCREEN: CHAT ============ */}
         {screen === 'chat' && (
           <>
-            {/* Intro/Empty State at the top */}
             {msgs.length === 0 && (
               <View style={st.introWrapper}>
                 <View style={st.empty}>
                   <Text style={st.emptyTitle}>💬 Ask anything</Text>
                   <Text style={st.emptyBody}>
                     Your scheme list is based on the intake answers. Ask follow-up
-                    questions about PM-JAY processes — pre-authorisation, claims,
-                    grievances, discharge, packages. Every answer is grounded in the
+                    questions about PM-JAY processes — every answer is grounded in the
                     uploaded PM-JAY PDFs with [S1]/[S2] evidence.
                   </Text>
                 </View>
@@ -311,7 +383,6 @@ export default function App() {
               </View>
             )}
 
-            {/* Composer — compact height, Enter sends (web) */}
             <View style={st.composer}>
               <TextInput
                 style={st.input}
@@ -328,6 +399,7 @@ export default function App() {
                 placeholderTextColor={C.muted}
                 editable={!sending}
               />
+              <MicButton onText={txt => setInput(txt)} />
               <Pressable style={[st.send, !canSend && st.sendOff]}
                 onPress={() => send()} disabled={!canSend}>
                 <Text style={st.sendText}>Send</Text>
@@ -351,6 +423,8 @@ const st = StyleSheet.create({
   flex: { flex: 1 },
   flex1: { flex: 1 },
 
+  // ★ FIX 1: header restored — the btnCol/chatBtn/chatBtnText entries were
+  // nested inside it by mistake. They belong in ResultsScreen.js (see below).
   header: {
     backgroundColor: C.primaryDark, paddingHorizontal: 14,
     paddingTop: Platform.OS === 'android' ? 38 : 8, paddingBottom: 10,
@@ -368,7 +442,13 @@ const st = StyleSheet.create({
   },
   newBtnText: { color: '#e0f2fe', fontSize: 12, fontWeight: '700' },
 
-  /* quiz gate screen */
+  langTitle: { color: '#e0f2fe', fontSize: 20, fontWeight: '800' },
+  langSub: { color: '#bae6fd', fontSize: 14, marginTop: 4 },
+  langRow: { flexDirection: 'row', gap: 12, marginTop: 24 },
+  langBtn2: { backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 26,
+              paddingVertical: 16 },
+  langBtn2Text: { fontSize: 17, fontWeight: '700', color: C.primaryDark },
+
   quizWrap: {
     flexGrow: 1, justifyContent: 'center', padding: S.pad,
     maxWidth: 720, width: '100%', alignSelf: 'center'
