@@ -131,6 +131,7 @@ logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(levelname)s | %(message)s")
 log = logging.getLogger("pmjay-rag")
 
+# Hot reload trigger
 if not torch.cuda.is_available():
     torch.set_num_threads(int(os.getenv("TORCH_THREADS", str(os.cpu_count() or 4))))
 
@@ -195,23 +196,23 @@ TEST_QUESTIONS = [
 # ================================================================== intents
 INTENT_TERMS = {
     "preauthorization": ["pre-authorisation", "preauthorization", "pre authorization",
-                         "pre-auth", "preauth", "authorization", "approval"],
+                         "pre-auth", "preauth", "authorization", "approval", "पूर्व-प्राधिकरण", "पूर्व मंजुरी"],
     "claims": ["claim", "claims", "claim settlement", "claim processing",
-               "adjudication", "payment", "rejection", "reconsideration"],
-    "grievance": ["grievance", "complaint", "appeal", "redressal", "denied"],
+               "adjudication", "payment", "rejection", "reconsideration", "दावा", "दावे", "निपटान"],
+    "grievance": ["grievance", "complaint", "appeal", "redressal", "denied", "शिकायत", "तक्रार"],
     "empanelment": ["empanelment", "empanelled", "hospital empanelment",
-                    "network hospital", "de-empanelment"],
+                    "network hospital", "de-empanelment", "सूचीबद्ध", "रुग्णालय नोंदणी"],
     "hospital_transaction": ["hospital transaction", "beneficiary identification",
                              "registration", "golden record", "e-card",
-                             "ayushman mitra", "pmam", "bis", "cashless"],
+                             "ayushman mitra", "pmam", "bis", "cashless", "पंजीकरण", "नोंदणी"],
     "benefit_packages": ["health benefit package", "hbp", "package", "procedure",
-                         "covered treatment", "package rate", "oncology", "cancer"],
-    "discharge": ["discharge", "discharge summary", "after treatment", "post discharge"],
+                         "covered treatment", "package rate", "oncology", "cancer", "पैकेज", "पॅकेज", "कँसर"],
+    "discharge": ["discharge", "discharge summary", "after treatment", "post discharge", "छुट्टी", "डिस्चार्ज"],
     # extended intents:
     "eligibility": ["eligib", "who can", "who is eligible", "who are eligible",
-                    "criteria", "qualif", "entitle"],
+                    "criteria", "qualif", "entitle", "पात्रता", "पात्र"],
     "general_info": ["pmjay", "pm-jay", "pm jay", "ayushman bharat",
-                     "pradhan mantri jan arogya", "yojana", "scheme"],
+                     "pradhan mantri jan arogya", "yojana", "scheme", "योजना", "आयुष्मान"],
 }
 
 DOC_BOOSTS = {
@@ -1161,6 +1162,45 @@ def intake_match(req: IntakeMatchRequest):
             "schemes": out_rows,
             "profile": profile_summary,
             "lang": lang}
+
+_UI_CACHE = {}
+
+@app.get("/api/locales")
+def get_locales(lang: str = "en"):
+    """Dynamically translates the UI strings using Gemini if not cached."""
+    if lang == "en":
+        with open("ui_keys_base.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+            
+    if lang in _UI_CACHE:
+        return _UI_CACHE[lang]
+        
+    with open("ui_keys_base.json", "r", encoding="utf-8") as f:
+        base_dict = json.load(f)
+        
+    prompt = f"""
+Translate the following JSON dictionary values into the natural language code '{lang}'. 
+Keep the JSON keys exactly the same. Only translate the values.
+Return ONLY valid JSON, nothing else.
+
+```json
+{json.dumps(base_dict, indent=2)}
+```
+"""
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        res = model.generate_content(prompt)
+        text = res.text.strip()
+        if text.startswith("```json"): text = text[7:]
+        if text.startswith("```"): text = text[3:]
+        if text.endswith("```"): text = text[:-3]
+        
+        translated_dict = json.loads(text.strip())
+        _UI_CACHE[lang] = translated_dict
+        return translated_dict
+    except Exception as e:
+        log.error("Failed to translate UI dict to %s: %s", lang, e)
+        return base_dict
 
 @app.get("/api/schemes")
 def schemes_debug():

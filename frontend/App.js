@@ -20,7 +20,7 @@ import SettingsModal from './src/components/SettingsModal';
 import IntakeQuiz from './src/components/IntakeQuiz';
 import MicButton from './src/components/MicButton';
 import ResultsScreen from './src/Screens/ResultsScreen';
-
+import { T, fetchLocale } from './src/locales';
 let nextId = 1;
 
 const INTAKE_DONE_KEY = '@pmjay/intakeDone';
@@ -32,7 +32,12 @@ const LANGS = [
   { code: 'en', label: 'English', short: 'EN' },
   { code: 'hi', label: 'हिन्दी', short: 'हि' },
   { code: 'mr', label: 'मराठी', short: 'म' },
+  { code: 'bn', label: 'বাংলা', short: 'বা' },
+  { code: 'ta', label: 'தமிழ்', short: 'த' },
+  { code: 'gu', label: 'ગુજરાતી', short: 'ગુ' },
 ];
+
+// L removed, using T from src/locales.js
 
 function friendlyError(e) {
   if (e?.timeout)
@@ -52,6 +57,7 @@ export default function App() {
   const [health, setHealth] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   const [intakeQ, setIntakeQ] = useState(null);
@@ -87,23 +93,28 @@ export default function App() {
 
     const loadExtras = async () => {
       try {
-        const d = await fetchSuggestions(lang);
-        if (alive) setSuggestions(d.questions || []);
+        await fetchLocale(lang);
       } catch { }
       try {
+        const d = await fetchSuggestions(lang);
+        if (alive) setSuggestions(d.questions || T[lang]?.suggs || T.en.suggs || []);
+      } catch {
+        if (alive) setSuggestions(T[lang]?.suggs || T.en.suggs || []);
+      }
+      try {
         const iq = await getIntakeQuestions(lang);
-        if (alive && iq.questions?.length) {
-          setIntakeQ(iq.questions);
-          // ★ FIX 2: await the storage read BEFORE calling setScreen —
-          // state updaters must be synchronous, never return a Promise
+        if (alive) {
+          if (iq.questions?.length) setIntakeQ(iq.questions);
           try {
             const done = await AsyncStorage.getItem(INTAKE_DONE_KEY);
-            setScreen(prev => (prev === 'loading' ? (done === '1' ? 'chat' : 'quiz') : prev));
+            setScreen(prev => (prev === 'loading' ? (done === '1' ? 'chat' : (iq.questions?.length ? 'quiz' : 'chat')) : prev));
           } catch {
-            setScreen(prev => (prev === 'loading' ? 'quiz' : prev));
+            setScreen(prev => (prev === 'loading' ? (iq.questions?.length ? 'quiz' : 'chat') : prev));
           }
         }
-      } catch { }
+      } catch {
+        if (alive) setScreen(prev => (prev === 'loading' ? 'chat' : prev));
+      }
     };
 
     const check = async () => {
@@ -240,12 +251,12 @@ export default function App() {
     if (health.error) return { text: `Failed: ${health.error}`, cls: st.stOff };
     if (health.ready)
       return {
-        text: `Ready · ${health.documents} docs · ${health.chunks} chunks · `
+        text: `${T[lang]?.readyPrefix || T.en.readyPrefix} · ${health.documents} docs · ${health.chunks} chunks · `
           + `${health.schemes ?? '?'} schemes · ${health.cuda ? 'GPU' : 'CPU'}`,
         cls: st.stOk,
       };
     return { text: `Loading: ${health.stage}`, cls: st.stLoad };
-  }, [health]);
+  }, [health, lang]);
 
   const canSend = input.trim().length > 0 && !sending && health?.ready;
 
@@ -264,7 +275,7 @@ export default function App() {
                   <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <Path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                   </Svg>
-                  <Text style={st.title}>PM-JAY Assistant</Text>
+                  <Text style={st.title}>{T[lang]?.title || T.en.title}</Text>
                 </View>
                 <Text style={[st.statusText, status.cls]} numberOfLines={1}>{status.text}</Text>
               </View>
@@ -272,20 +283,40 @@ export default function App() {
               {screen === 'chat' && (
                 <>
                   <Pressable onPress={reopenIntake} hitSlop={8} style={st.outlineBtn}>
-                    <Text style={st.outlineBtnText}>Schemes</Text>
+                    <Text style={st.outlineBtnText}>{T[lang]?.schemesBtn || T.en.schemesBtn}</Text>
                   </Pressable>
                   <Pressable onPress={newChat} hitSlop={8} style={st.solidBtn}>
-                    <Text style={st.solidBtnText}>＋ New</Text>
+                    <Text style={st.solidBtnText}>{T[lang]?.newBtn || T.en.newBtn}</Text>
                   </Pressable>
                 </>
               )}
 
-              {/* language cycle button, always visible */}
-              <Pressable onPress={cycleLang} hitSlop={8} style={st.linkBtn}>
-                <Text style={st.linkBtnText}>
-                  {LANGS.find(l => l.code === lang)?.short}
-                </Text>
-              </Pressable>
+              <View style={{ zIndex: 100 }}>
+                <Pressable onPress={() => setLangMenuOpen(!langMenuOpen)} hitSlop={8} style={st.langPill}>
+                  <Text style={st.langPillText}>
+                    {LANGS.find(l => l.code === lang)?.label} ▾
+                  </Text>
+                </Pressable>
+
+                {langMenuOpen && (
+                  <View style={st.langDropdown}>
+                    {LANGS.map(l => (
+                      <Pressable
+                        key={l.code}
+                        style={st.langDropItem}
+                        onPress={() => {
+                          setLangMenuOpen(false);
+                          chooseLang(l.code);
+                        }}
+                      >
+                        <Text style={[st.langDropText, lang === l.code && st.langDropTextActive]}>
+                          {l.label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
 
               <Pressable onPress={() => setSettingsOpen(true)} hitSlop={10} style={st.linkBtn}>
                 <Svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -321,10 +352,10 @@ export default function App() {
                       <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                     </Svg>
                   </View>
-                  <Text style={st.quizHello}>Welcome to PM-JAY Helper</Text>
+                  <Text style={st.quizHello}>{T[lang]?.quizHello || T.en.quizHello}</Text>
                 </View>
                 <Text style={st.quizLead}>
-                  Let's find the best healthcare schemes (PM-JAY, Rashtriya Arogya Nidhi, etc.) for you. Answer a few short questions to get started.
+                  {T[lang]?.quizLead || T.en.quizLead}
                 </Text>
                 <IntakeQuiz
                   key={lang}
@@ -352,7 +383,7 @@ export default function App() {
           {screen === 'loading' && (
             <View style={st.center}>
               <Text style={st.loadingTxt}>
-                {health?.stage ? `Preparing: ${health.stage}` : 'Connecting to backend…'}
+                {health?.stage ? (T[lang]?.wait || T.en.wait) : (T[lang]?.conn || T.en.conn)}
               </Text>
             </View>
           )}
@@ -368,9 +399,9 @@ export default function App() {
                         <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                       </Svg>
                     </View>
-                    <Text style={st.emptyTitle}>How can we help today?</Text>
+                    <Text style={st.emptyTitle}>{T[lang]?.title || T.en.title}</Text>
                     <Text style={st.emptyBody}>
-                      Your recommended schemes are ready. You can now ask me directly about PM-JAY coverage, eligibility, hospitals, or the claim process. All answers are grounded in official guidelines.
+                      {T[lang]?.desc || T.en.desc}
                     </Text>
                   </View>
                 </View>
@@ -393,7 +424,7 @@ export default function App() {
 
               {sending && <TypingBubble onCancel={cancel} />}
 
-              {suggestions.length > 0 && !sending && msgs.length === 0 && (
+              {suggestions?.length > 0 && !sending && msgs.length === 0 && (
                 <View style={st.chipsWrapper}>
                   {suggestions.map(q => (
                     <Pressable key={q} style={st.chip} onPress={() => send(q)}>
@@ -413,8 +444,8 @@ export default function App() {
                     multiline={true}
                     blurOnSubmit={false}
                     placeholder={health?.ready
-                      ? 'Ask anything…'
-                      : 'Waiting for backend…'}
+                      ? (T[lang]?.ask || T.en.ask)
+                      : (T[lang]?.wait || T.en.wait)}
                     placeholderTextColor="#cbd5e1"
                     editable={!sending}
                   />
@@ -466,6 +497,7 @@ const st = StyleSheet.create({
     paddingTop: Platform.OS === 'web' ? 24 : 44,
     paddingBottom: 0,
     backgroundColor: 'transparent',
+    zIndex: 9999, elevation: 9999,
   },
   header: {
     backgroundColor: '#09090b',
@@ -473,6 +505,7 @@ const st = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 20, paddingVertical: 14,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
+    zIndex: 9999,
   },
   titleLogoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { color: '#ffffff', fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
@@ -497,8 +530,27 @@ const st = StyleSheet.create({
   },
   linkBtnText: { color: '#e4e4e7', fontSize: 14, fontWeight: '600' },
 
-  langTitle: { color: C.text, fontSize: 24, fontWeight: '800' },
-  langSub: { color: '#6b7280', fontSize: 16, marginTop: 6 },
+  langPill: {
+    paddingHorizontal: 16, paddingVertical: 8,
+    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginLeft: 8,
+  },
+  langPillText: { color: '#f8fafc', fontSize: 13, fontWeight: '600' },
+
+  langTitle: { color: '#f8fafc', fontSize: 28, fontWeight: '800' },
+  langSub: { color: '#94a3b8', fontSize: 16, marginTop: 6 },
+  langDropdown: {
+    position: 'absolute', top: 40, right: 0, zIndex: 9999,
+    backgroundColor: '#0f172a', borderRadius: 12, borderWidth: 1, borderColor: '#334155',
+    padding: 6, minWidth: 140,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 6,
+  },
+  langDropItem: {
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 8,
+  },
+  langDropText: { color: '#cbd5e1', fontSize: 15, fontWeight: '500' },
+  langDropTextActive: { color: '#0ea5e9', fontWeight: '700' },
   langRow: { flexDirection: 'row', gap: 14, marginTop: 28 },
   langBtn2: {
     backgroundColor: C.primary, borderRadius: 24, paddingHorizontal: 32,

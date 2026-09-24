@@ -2,7 +2,9 @@ import React, { useState, useEffect, memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { C, S } from '../theme';
 
-export default memo(function TypingBubble({ onCancel }) {
+import { T } from '../locales';
+
+export default memo(function TypingBubble({ onCancel, lang = 'en' }) {
   const [sec, setSec] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setSec(v => v + 1), 1000);
@@ -20,19 +22,21 @@ export default memo(function TypingBubble({ onCancel }) {
         <View style={[st.dot, { opacity: 0.25 + 0.25 * ((sec + 2) % 3) }]} />
       </View>
       <Text style={st.text}>
-        Retrieving evidence &amp; generating… {mm > 0 ? `${mm}:` : ''}{ss}
+        {T[lang]?.retrieving || T.en.retrieving} {mm > 0 ? `${mm}:` : ''}{ss}
       </Text>
       <Pressable onPress={onCancel} hitSlop={8}>
-        <Text style={st.cancel}>Cancel</Text>
+        <Text style={st.cancel}>{T[lang]?.cancel || T.en.cancel}</Text>
       </Pressable>
     </View>
   );
 });
 
 const st = StyleSheet.create({
-  box: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: S.pad,
-         marginBottom: 8, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border,
-         borderRadius: S.radius, paddingHorizontal: 12, paddingVertical: 10 },
+  box: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: S.pad,
+    marginBottom: 8, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border,
+    borderRadius: S.radius, paddingHorizontal: 12, paddingVertical: 10
+  },
   dots: { flexDirection: 'row', gap: 4 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.primary },
   text: { flex: 1, fontSize: 12, color: C.muted },
