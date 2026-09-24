@@ -27,7 +27,7 @@ PMJAY-RAG/
 |-- backend/
 |   |-- app.py
 |   |-- schemes.py
-|   |-- schemes.xlsx
+|   |-- schemes.xlsx  
 |   |-- requirements.txt
 |   `-- data/pmjay/       # Put source PDFs here
 `-- frontend/

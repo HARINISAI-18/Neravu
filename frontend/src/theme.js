@@ -1,20 +1,20 @@
 export const C = {
-  bg: '#f1f5f9',
+  bg: '#e8f0fe',
   primary: '#0284c7',
-  primaryDark: '#0c4a6e',
+  primaryDark: '#ffffff',
   surface: '#ffffff',
-  border: '#e2e8f0',
+  border: '#cbd5e1',
   text: '#0f172a',
-  muted: '#64748b',
+  muted: '#475569',
   userBubble: '#0284c7',
   userText: '#ffffff',
   botBubble: '#ffffff',
   badge: '#e0f2fe',
   badgeText: '#0369a1',
-  error: '#b91c1c',
+  error: '#dc2626',
   errorBg: '#fef2f2',
-  citeBg: '#e0f2fe',
-  citeText: '#0369a1',
+  citeBg: '#f0f9ff',
+  citeText: '#0284c7',
 };
 
-export const S = { pad: 12, radius: 14 };
+export const S = { pad: 16, radius: 24 };

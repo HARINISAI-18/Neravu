@@ -5,6 +5,7 @@ import {
   SafeAreaView, KeyboardAvoidingView, FlatList, View, Text, TextInput,
   Pressable, ScrollView, StyleSheet, Platform, AppState, Keyboard,
 } from 'react-native';
+import Svg, { Path, Circle } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { C, S } from './src/theme';
@@ -12,11 +13,13 @@ import {
   loadConfig, fetchHealth, fetchSuggestions, ask, resetConversation,
   getIntakeQuestions, matchIntake, saveLangPref,
 } from './src/api';
+import { LinearGradient } from 'expo-linear-gradient';
 import MessageItem from './src/components/MessageItem';
 import TypingBubble from './src/components/TypingBubble';
 import SettingsModal from './src/components/SettingsModal';
 import IntakeQuiz from './src/components/IntakeQuiz';
 import MicButton from './src/components/MicButton';
+import ResultsScreen from './src/Screens/ResultsScreen';
 
 let nextId = 1;
 
@@ -247,254 +250,344 @@ export default function App() {
   const canSend = input.trim().length > 0 && !sending && health?.ready;
 
   return (
-    <SafeAreaView style={st.safe}>
-      <StatusBar style="light" />
-      <KeyboardAvoidingView
-        style={st.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <View style={st.header}>
-          <View style={st.flex1}>
-            <Text style={st.title}>PM-JAY Assistant</Text>
-            <Text style={[st.statusText, status.cls]} numberOfLines={1}>{status.text}</Text>
-          </View>
-
-          {screen === 'chat' && (
-            <>
-              <Pressable onPress={reopenIntake} hitSlop={8} style={st.newBtn}>
-                <Text style={st.newBtnText}>🧾 Schemes</Text>
-              </Pressable>
-              <Pressable onPress={newChat} hitSlop={8} style={st.newBtn}>
-                <Text style={st.newBtnText}>＋ New</Text>
-              </Pressable>
-            </>
-          )}
-
-          {/* language cycle button, always visible */}
-          <Pressable onPress={cycleLang} hitSlop={8} style={st.newBtn}>
-            <Text style={st.newBtnText}>
-              {LANGS.find(l => l.code === lang)?.short}
-            </Text>
-          </Pressable>
-
-          <Pressable onPress={() => setSettingsOpen(true)} hitSlop={10}>
-            <Text style={st.gear}>⚙️</Text>
-          </Pressable>
-        </View>
-
-        {/* ============ SCREEN: LANGUAGE GATE ============ */}
-        {screen === 'lang' && (
-          <View style={st.center}>
-            <Text style={st.langTitle}>Choose your language</Text>
-            <Text style={st.langSub}>भाषा चुनें · भाषा निवडा</Text>
-            <View style={st.langRow}>
-              {LANGS.map(l => (
-                <Pressable key={l.code} style={st.langBtn2} onPress={() => chooseLang(l.code)}>
-                  <Text style={st.langBtn2Text}>{l.label}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* ============ SCREEN: QUIZ ============ */}
-        {screen === 'quiz' && intakeQ && (
-          <ScrollView style={st.flex} contentContainerStyle={st.quizWrap}
-            keyboardShouldPersistTaps="handled">
-            <View style={st.quizCard}>
-              <Text style={st.quizHello}>Welcome 👋</Text>
-              <Text style={st.quizLead}>
-                Answer a few short questions about the patient's situation, and we'll
-                generate a personalised list of cancer support schemes
-                (PM-JAY, Rashtriya Arogya Nidhi, Delhi Arogya Kosh, CanKids, Tata Trusts
-                and more) — then you can ask anything in the chat.
-              </Text>
-              <IntakeQuiz
-                key={lang}
-                questions={intakeQ}
-                onDone={handleIntakeDone}
-                onSkip={skipIntake}
-                disabled={sending}
-                lang={lang}
-              />
-            </View>
-          </ScrollView>
-        )}
-
-        {/* ============ SCREEN: RESULTS ============ */}
-        {screen === 'results' && matchData && (
-          <ResultsScreen
-            data={matchData}
-            lang={lang}
-            onRetake={reopenIntake}
-            onChat={() => setScreen('chat')}
-          />
-        )}
-
-        {/* ============ SCREEN: LOADING ============ */}
-        {screen === 'loading' && (
-          <View style={st.center}>
-            <Text style={st.loadingTxt}>
-              {health?.stage ? `Preparing: ${health.stage}` : 'Connecting to backend…'}
-            </Text>
-          </View>
-        )}
-
-        {/* ============ SCREEN: CHAT ============ */}
-        {screen === 'chat' && (
-          <>
-            {msgs.length === 0 && (
-              <View style={st.introWrapper}>
-                <View style={st.empty}>
-                  <Text style={st.emptyTitle}>💬 Ask anything</Text>
-                  <Text style={st.emptyBody}>
-                    Your scheme list is based on the intake answers. Ask follow-up
-                    questions about PM-JAY processes — every answer is grounded in the
-                    uploaded PM-JAY PDFs with [S1]/[S2] evidence.
-                  </Text>
+    <LinearGradient colors={['#475569', '#0f172a']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={st.safe}>
+      <SafeAreaView style={st.flex1}>
+        <StatusBar style="dark" />
+        <KeyboardAvoidingView
+          style={st.flex1}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <View style={st.headerWrapper}>
+            <View style={st.header}>
+              <View style={st.flex1}>
+                <View style={st.titleLogoRow}>
+                  <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <Path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </Svg>
+                  <Text style={st.title}>PM-JAY Assistant</Text>
                 </View>
+                <Text style={[st.statusText, status.cls]} numberOfLines={1}>{status.text}</Text>
               </View>
-            )}
 
-            <FlatList
-              style={st.flex}
-              inverted
-              data={msgs}
-              renderItem={renderItem}
-              keyExtractor={keyExtractor}
-              initialNumToRender={10}
-              maxToRenderPerBatch={6}
-              windowSize={7}
-              updateCellsBatchingPeriod={50}
-              removeClippedSubviews
-              contentContainerStyle={st.listContent}
-              ListFooterComponent={<View style={st.listTopPad} />}
-            />
+              {screen === 'chat' && (
+                <>
+                  <Pressable onPress={reopenIntake} hitSlop={8} style={st.outlineBtn}>
+                    <Text style={st.outlineBtnText}>Schemes</Text>
+                  </Pressable>
+                  <Pressable onPress={newChat} hitSlop={8} style={st.solidBtn}>
+                    <Text style={st.solidBtnText}>＋ New</Text>
+                  </Pressable>
+                </>
+              )}
 
-            {sending && <TypingBubble onCancel={cancel} />}
+              {/* language cycle button, always visible */}
+              <Pressable onPress={cycleLang} hitSlop={8} style={st.linkBtn}>
+                <Text style={st.linkBtnText}>
+                  {LANGS.find(l => l.code === lang)?.short}
+                </Text>
+              </Pressable>
 
-            {suggestions.length > 0 && !sending && (
-              <View style={st.chipsWrapper}>
-                {suggestions.map(q => (
-                  <Pressable key={q} style={st.chip} onPress={() => send(q)}>
-                    <Text style={st.chipText} numberOfLines={2}>{q}</Text>
+              <Pressable onPress={() => setSettingsOpen(true)} hitSlop={10} style={st.linkBtn}>
+                <Svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <Path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><Circle cx="12" cy="12" r="3" />
+                </Svg>
+              </Pressable>
+            </View>
+          </View>
+
+          {/* ============ SCREEN: LANGUAGE GATE ============ */}
+          {screen === 'lang' && (
+            <View style={st.center}>
+              <Text style={st.langTitle}>Choose your language</Text>
+              <Text style={st.langSub}>भाषा चुनें · भाषा निवडा</Text>
+              <View style={st.langRow}>
+                {LANGS.map(l => (
+                  <Pressable key={l.code} style={st.langBtn2} onPress={() => chooseLang(l.code)}>
+                    <Text style={st.langBtn2Text}>{l.label}</Text>
                   </Pressable>
                 ))}
               </View>
-            )}
-
-            <View style={st.composer}>
-              <TextInput
-                style={st.input}
-                value={input}
-                onChangeText={setInput}
-                onKeyPress={Platform.OS === 'web' ? onKeyDown : undefined}
-                multiline={false}
-                returnKeyType="send"
-                blurOnSubmit={Platform.OS !== 'web'}
-                onSubmitEditing={Platform.OS !== 'web' ? () => send() : undefined}
-                placeholder={health?.ready
-                  ? 'Ask a question… (Enter to send)'
-                  : 'Waiting for backend…'}
-                placeholderTextColor={C.muted}
-                editable={!sending}
-              />
-              <MicButton onText={txt => setInput(txt)} />
-              <Pressable style={[st.send, !canSend && st.sendOff]}
-                onPress={() => send()} disabled={!canSend}>
-                <Text style={st.sendText}>Send</Text>
-              </Pressable>
             </View>
-          </>
-        )}
+          )}
 
-        <SettingsModal
-          visible={settingsOpen}
-          onClose={() => setSettingsOpen(false)}
-          onSaved={() => { setHealth(null); setSuggestions([]); setReloadKey(k => k + 1); }}
-        />
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          {/* ============ SCREEN: QUIZ ============ */}
+          {screen === 'quiz' && intakeQ && (
+            <ScrollView style={st.flex} contentContainerStyle={st.quizWrap}
+              keyboardShouldPersistTaps="handled">
+              <View style={st.quizCard}>
+                <View style={st.quizHeader}>
+                  <View style={st.quizIconContainer}>
+                    <Svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    </Svg>
+                  </View>
+                  <Text style={st.quizHello}>Welcome to PM-JAY Helper</Text>
+                </View>
+                <Text style={st.quizLead}>
+                  Let's find the best healthcare schemes (PM-JAY, Rashtriya Arogya Nidhi, etc.) for you. Answer a few short questions to get started.
+                </Text>
+                <IntakeQuiz
+                  key={lang}
+                  questions={intakeQ}
+                  onDone={handleIntakeDone}
+                  onSkip={skipIntake}
+                  disabled={sending}
+                  lang={lang}
+                />
+              </View>
+            </ScrollView>
+          )}
+
+          {/* ============ SCREEN: RESULTS ============ */}
+          {screen === 'results' && matchData && (
+            <ResultsScreen
+              data={matchData}
+              lang={lang}
+              onRetake={reopenIntake}
+              onChat={() => setScreen('chat')}
+            />
+          )}
+
+          {/* ============ SCREEN: LOADING ============ */}
+          {screen === 'loading' && (
+            <View style={st.center}>
+              <Text style={st.loadingTxt}>
+                {health?.stage ? `Preparing: ${health.stage}` : 'Connecting to backend…'}
+              </Text>
+            </View>
+          )}
+
+          {/* ============ SCREEN: CHAT ============ */}
+          {screen === 'chat' && (
+            <>
+              {msgs.length === 0 && (
+                <View style={st.introWrapper}>
+                  <View style={st.empty}>
+                    <View style={st.iconCircle}>
+                      <Svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f8fafc" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                      </Svg>
+                    </View>
+                    <Text style={st.emptyTitle}>How can we help today?</Text>
+                    <Text style={st.emptyBody}>
+                      Your recommended schemes are ready. You can now ask me directly about PM-JAY coverage, eligibility, hospitals, or the claim process. All answers are grounded in official guidelines.
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              <FlatList
+                style={st.flex}
+                inverted
+                data={msgs}
+                renderItem={renderItem}
+                keyExtractor={keyExtractor}
+                initialNumToRender={10}
+                maxToRenderPerBatch={6}
+                windowSize={7}
+                updateCellsBatchingPeriod={50}
+                removeClippedSubviews
+                contentContainerStyle={st.listContent}
+                ListFooterComponent={<View style={st.listTopPad} />}
+              />
+
+              {sending && <TypingBubble onCancel={cancel} />}
+
+              {suggestions.length > 0 && !sending && msgs.length === 0 && (
+                <View style={st.chipsWrapper}>
+                  {suggestions.map(q => (
+                    <Pressable key={q} style={st.chip} onPress={() => send(q)}>
+                      <Text style={st.chipText} numberOfLines={2}>{q}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+
+              <View style={st.composerContainer}>
+                <View style={st.composerBox}>
+                  <TextInput
+                    style={st.input}
+                    value={input}
+                    onChangeText={setInput}
+                    onKeyPress={Platform.OS === 'web' ? onKeyDown : undefined}
+                    multiline={true}
+                    blurOnSubmit={false}
+                    placeholder={health?.ready
+                      ? 'Ask anything…'
+                      : 'Waiting for backend…'}
+                    placeholderTextColor="#cbd5e1"
+                    editable={!sending}
+                  />
+
+                  <View style={st.composerActions}>
+                    <View style={st.leftActions}>
+                      <MicButton onText={txt => setInput(txt)} isMinimal={true} />
+                    </View>
+
+                    <View style={st.rightActions}>
+                      <Text style={st.charCount}>
+                        {input.length}/2000
+                      </Text>
+                      <Pressable style={[st.send, !canSend && !sending && st.sendOff]}
+                        onPress={sending ? cancel : () => send()} disabled={!canSend && !sending}>
+                        {sending ? (
+                          <View style={st.stopSquare} />
+                        ) : (
+                          <Svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <Path d="M12 19V5M5 12l7-7 7 7" />
+                          </Svg>
+                        )}
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </>
+          )}
+
+          <SettingsModal
+            visible={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+            onSaved={() => { setHealth(null); setSuggestions([]); setReloadKey(k => k + 1); }}
+          />
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const st = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: C.primaryDark },
+  safe: { flex: 1 },
   flex: { flex: 1 },
   flex1: { flex: 1 },
 
-  // ★ FIX 1: header restored — the btnCol/chatBtn/chatBtnText entries were
-  // nested inside it by mistake. They belong in ResultsScreen.js (see below).
+  headerWrapper: {
+    paddingHorizontal: Platform.OS === 'web' ? 24 : 12,
+    paddingTop: Platform.OS === 'web' ? 24 : 44,
+    paddingBottom: 0,
+    backgroundColor: 'transparent',
+  },
   header: {
-    backgroundColor: C.primaryDark, paddingHorizontal: 14,
-    paddingTop: Platform.OS === 'android' ? 38 : 8, paddingBottom: 10,
-    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#09090b',
+    borderRadius: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    paddingHorizontal: 20, paddingVertical: 14,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
   },
-  title: { color: '#e0f2fe', fontSize: 17, fontWeight: '700' },
-  statusText: { fontSize: 11, marginTop: 2 },
-  stOk: { color: '#86efac' },
-  stLoad: { color: '#fcd34d' },
-  stOff: { color: '#fca5a5' },
-  gear: { fontSize: 22 },
-  newBtn: {
-    borderWidth: 1, borderColor: 'rgba(224,242,254,.4)', borderRadius: 8,
-    paddingHorizontal: 9, paddingVertical: 5
-  },
-  newBtnText: { color: '#e0f2fe', fontSize: 12, fontWeight: '700' },
+  titleLogoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { color: '#ffffff', fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
+  statusText: { fontSize: 12, marginTop: 4, fontWeight: '500' },
+  stOk: { color: '#4ade80' },
+  stLoad: { color: '#fbbf24' },
+  stOff: { color: '#f87171' },
 
-  langTitle: { color: '#e0f2fe', fontSize: 20, fontWeight: '800' },
-  langSub: { color: '#bae6fd', fontSize: 14, marginTop: 4 },
-  langRow: { flexDirection: 'row', gap: 12, marginTop: 24 },
-  langBtn2: { backgroundColor: '#fff', borderRadius: 14, paddingHorizontal: 26,
-              paddingVertical: 16 },
-  langBtn2Text: { fontSize: 17, fontWeight: '700', color: C.primaryDark },
+  outlineBtn: {
+    borderWidth: 1, borderColor: '#3f3f46', borderRadius: 8,
+    paddingHorizontal: 16, paddingVertical: 8, backgroundColor: 'transparent',
+  },
+  outlineBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '600' },
+
+  solidBtn: {
+    borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, backgroundColor: '#ffffff',
+  },
+  solidBtnText: { color: '#09090b', fontSize: 13, fontWeight: '700' },
+
+  linkBtn: {
+    paddingHorizontal: 10, paddingVertical: 8,
+  },
+  linkBtnText: { color: '#e4e4e7', fontSize: 14, fontWeight: '600' },
+
+  langTitle: { color: C.text, fontSize: 24, fontWeight: '800' },
+  langSub: { color: '#6b7280', fontSize: 16, marginTop: 6 },
+  langRow: { flexDirection: 'row', gap: 14, marginTop: 28 },
+  langBtn2: {
+    backgroundColor: C.primary, borderRadius: 24, paddingHorizontal: 32,
+    paddingVertical: 14, shadowColor: C.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4
+  },
+  langBtn2Text: { fontSize: 17, fontWeight: '700', color: '#fff' },
 
   quizWrap: {
     flexGrow: 1, justifyContent: 'center', padding: S.pad,
     maxWidth: 720, width: '100%', alignSelf: 'center'
   },
-  quizCard: { backgroundColor: 'transparent' },
-  quizHello: { fontSize: 20, fontWeight: '800', color: '#e0f2fe', marginBottom: 6 },
-  quizLead: { fontSize: 13, color: '#bae6fd', lineHeight: 20, marginBottom: 12 },
+  quizCard: { backgroundColor: C.surface, borderRadius: 24, padding: 28, shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.08, shadowRadius: 16, elevation: 4, borderWidth: 1, borderColor: C.border },
+  quizHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 12 },
+  quizIconContainer: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#f0f9ff', alignItems: 'center', justifyContent: 'center' },
+  quizHello: { fontSize: 24, fontWeight: '800', color: C.text, letterSpacing: -0.5 },
+  quizLead: { fontSize: 15, color: C.muted, lineHeight: 24, marginBottom: 20 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  loadingTxt: { color: '#bae6fd', fontSize: 14 },
+  loadingTxt: { color: C.muted, fontSize: 15, fontWeight: '500' },
 
-  listContent: { paddingTop: 12, flexGrow: 1 },
-  listTopPad: { height: 10 },
-  introWrapper: { marginTop: 16, flexShrink: 0 },
+  listContent: { paddingTop: 20, paddingBottom: 20, flexGrow: 1, paddingHorizontal: Platform.OS === 'web' ? 40 : 12 },
+  listTopPad: { height: 16 },
+  introWrapper: { marginTop: 24, flexShrink: 0, paddingHorizontal: 16, width: '100%', maxWidth: 850, alignSelf: 'center' },
   empty: {
-    margin: S.pad, padding: 16, backgroundColor: '#fefce8', borderRadius: S.radius,
-    borderWidth: 1, borderColor: '#fde68a'
+    padding: 32, backgroundColor: 'rgba(255, 255, 255, 0.12)', borderRadius: 24,
+    borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.25)', shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 16, elevation: 4,
+    alignItems: 'center',
+    ...Platform.select({ web: { backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' } })
   },
-  emptyTitle: { fontSize: 15, fontWeight: '700', color: C.text },
-  emptyBody: { fontSize: 13, color: '#713f12', lineHeight: 19, marginTop: 6 },
+  iconCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: 'rgba(255, 255, 255, 0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 20, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.2)' },
+  emptyTitle: { fontSize: 24, fontWeight: '800', color: '#f8fafc', textAlign: 'center', letterSpacing: -0.5 },
+  emptyBody: { fontSize: 15, color: '#cbd5e1', lineHeight: 24, marginTop: 12, textAlign: 'center' },
 
   chipsWrapper: {
     flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center',
-    paddingHorizontal: 8, paddingTop: 4, paddingBottom: 8, gap: 6,
+    paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24, gap: 10,
+    width: '100%', maxWidth: 1000, alignSelf: 'center'
   },
   chip: {
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
-    borderWidth: 1, borderColor: 'rgba(125,211,252,.3)',
-    backgroundColor: 'rgba(255,255,255,0.06)', alignItems: 'center',
-    maxWidth: '48%',
+    paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20,
+    borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 2,
+    ...Platform.select({ web: { backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' } })
   },
-  chipText: { fontSize: 11, color: '#e0f2fe', textAlign: 'center', lineHeight: 14 },
+  chipText: { fontSize: 13, color: '#cbd5e1', textAlign: 'center', fontWeight: '500' },
 
-  composer: {
-    flexDirection: 'row', alignItems: 'flex-end', gap: 8, padding: 10, paddingBottom: 14,
-    backgroundColor: C.surface, borderTopWidth: 1, borderColor: C.border,
+  composerContainer: {
+    padding: 16,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+  },
+  composerBox: {
+    width: '100%',
+    maxWidth: 900,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4,
+    paddingTop: 8,
+    ...Platform.select({ web: { backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' } })
   },
   input: {
-    flex: 1, borderWidth: 1, borderColor: '#cbd5e1', borderRadius: 12,
-    paddingHorizontal: 14, paddingVertical: 10,
-    fontSize: 15, color: C.text,
     minHeight: 44, maxHeight: 120,
+    paddingHorizontal: 16, paddingVertical: 10,
+    fontSize: 16, color: '#f8fafc',
+    borderWidth: 0,
+    lineHeight: 24,
+    ...Platform.select({ web: { outlineStyle: 'none' } }),
+  },
+  composerActions: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    paddingHorizontal: 12, paddingBottom: 12, paddingTop: 4,
+  },
+  leftActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  rightActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  charCount: {
+    fontSize: 12, color: '#ced4da', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
   send: {
-    backgroundColor: C.primary, borderRadius: 12, paddingHorizontal: 20,
-    minHeight: 44, justifyContent: 'center'
+    backgroundColor: '#0ea5e9',
+    borderRadius: 999, width: 36, height: 36, alignItems: 'center', justifyContent: 'center',
   },
-  sendOff: { backgroundColor: '#94a3b8' },
-  sendText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  sendOff: {
+    opacity: 0.3,
+  },
+  stopSquare: {
+    width: 12, height: 12, backgroundColor: '#fff', borderRadius: 2,
+  },
 });

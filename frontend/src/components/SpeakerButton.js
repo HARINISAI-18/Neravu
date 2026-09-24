@@ -1,28 +1,50 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { TouchableOpacity, Text, ActivityIndicator } from "react-native";
-import { Audio } from "expo-av";
+import { createAudioPlayer } from "expo-audio";
 import { getTtsUrl } from "../api";
 
 export default function SpeakerButton({ text, lang, size = 26 }) {
   const [state, setState] = useState("idle"); // idle | loading | playing
-  const soundRef = useRef();
+  const playerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.remove();
+      }
+    };
+  }, []);
 
   async function onPress() {
     if (state === "playing") {
-      await soundRef.current?.stopAsync();
-      await soundRef.current?.unloadAsync();
+      playerRef.current?.pause();
       setState("idle");
       return;
     }
+
     try {
       setState("loading");
       const url = await getTtsUrl(text, lang);
-      const { sound } = await Audio.Sound.createAsync({ uri: url });
-      soundRef.current = sound;
-      sound.setOnPlaybackStatusUpdate(s => { if (s.didJustFinish) setState("idle"); });
+
+      if (playerRef.current) {
+        playerRef.current.remove();
+      }
+
+      const player = createAudioPlayer(url);
+      playerRef.current = player;
+
+      player.addListener('playbackStatusUpdate', (s) => {
+        if (s.didJustFinish) {
+          setState("idle");
+        }
+      });
+
       setState("playing");
-      await sound.playAsync();
-    } catch (e) { setState("idle"); }
+      player.play();
+    } catch (e) {
+      console.warn("TTS Play error:", e);
+      setState("idle");
+    }
   }
 
   return (

@@ -8,6 +8,7 @@
     "expo": "~57.0.24",
     "expo-audio": "~57.0.5",
     "expo-av": "^16.0.8",
+    "expo-linear-gradient": "~57.0.2",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",

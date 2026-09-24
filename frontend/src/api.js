@@ -499,8 +499,7 @@ export async function speechToText(
         uri: audioSource,
         name: `clip.${ext}`,
         type: mime,
-      },
-      `clip.${ext}`
+      }
     );
   }
 

@@ -3,6 +3,7 @@ import {
   TouchableOpacity,
   Text,
   Alert,
+  View,
 } from "react-native";
 
 import {
@@ -14,8 +15,9 @@ import {
 } from "expo-audio";
 
 import { speechToText } from "../api";
+import Svg, { Path } from 'react-native-svg';
 
-export default function MicButton({ onText }) {
+export default function MicButton({ onText, isMinimal }) {
   const recorder = useAudioRecorder(
     RecordingPresets.HIGH_QUALITY
   );
@@ -149,7 +151,7 @@ export default function MicButton({ onText }) {
       Alert.alert(
         "Voice Input Failed",
         error?.message ||
-          "Could not convert your speech to text."
+        "Could not convert your speech to text."
       );
     } finally {
       setProcessing(false);
@@ -181,30 +183,35 @@ export default function MicButton({ onText }) {
           ? "Stop recording"
           : "Start voice input"
       }
-      style={{
-        width: 46,
-        height: 46,
-        borderRadius: 23,
-
-        justifyContent: "center",
-        alignItems: "center",
-
-        backgroundColor: processing
-          ? "#94A3B8"
-          : isRecording
-          ? "#EF4444"
-          : "#0E7490",
-
+      style={isMinimal ? {
+        width: 32, height: 32, borderRadius: 8,
+        justifyContent: 'center', alignItems: 'center',
+        backgroundColor: processing ? 'rgba(0,0,0,0.04)' : isRecording ? '#fee2e2' : 'transparent',
+      } : {
+        width: 46, height: 46, borderRadius: 23,
+        justifyContent: "center", alignItems: "center",
+        backgroundColor: processing ? "#94A3B8" : isRecording ? "#EF4444" : "#0E7490",
         opacity: processing ? 0.7 : 1,
       }}
     >
-      <Text style={{ fontSize: 20 }}>
-        {processing
-          ? "⏳"
-          : isRecording
-          ? "⏹️"
-          : "🎙️"}
-      </Text>
+      {isMinimal ? (
+        processing ? (
+          <Text style={{ fontSize: 14 }}>⌛</Text>
+        ) : isRecording ? (
+          <View style={{ width: 10, height: 10, borderRadius: 2, backgroundColor: '#ef4444' }} />
+        ) : (
+          <Svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e2e8f0" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <Path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+            <Path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+            <Path d="M12 19v4" />
+            <Path d="M8 23h8" />
+          </Svg>
+        )
+      ) : (
+        <Text style={{ fontSize: 20 }}>
+          {processing ? "⏳" : isRecording ? "⏹️" : "🎙️"}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 }

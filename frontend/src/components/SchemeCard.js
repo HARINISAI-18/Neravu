@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Pressable,
-         Linking, Share } from "react-native";
+import {
+  View, Text, StyleSheet, TouchableOpacity, Pressable,
+  Linking, Share
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Svg, { Circle, Text as SvgText } from "react-native-svg";
 import SpeakerButton from "./SpeakerButton";
@@ -49,9 +51,9 @@ const UI = {
 };
 
 const STYLE_MAP = {
-  eligible:          { bg: "#DCFCE7", fg: "#166534", ring: "#22C55E" },
+  eligible: { bg: "#DCFCE7", fg: "#166534", ring: "#22C55E" },
   possibly_eligible: { bg: "#FEF3C7", fg: "#92400E", ring: "#F59E0B" },
-  not_eligible:      { bg: "#FEE2E2", fg: "#991B1B", ring: "#EF4444" },
+  not_eligible: { bg: "#FEE2E2", fg: "#991B1B", ring: "#EF4444" },
 };
 
 // Backend rows may carry enum status OR free text ("Possibly eligible — check criteria")
@@ -118,13 +120,13 @@ export default function SchemeCard({ scheme, lang = "en" }) {
   useEffect(() => {
     AsyncStorage.getItem(docKey(scheme.name))
       .then((v) => v && setChecked(JSON.parse(v)))
-      .catch(() => {});
+      .catch(() => { });
   }, [scheme.name]);
 
   const toggleDoc = (doc) => {
     setChecked((prev) => {
       const next = { ...prev, [doc]: !prev[doc] };
-      AsyncStorage.setItem(docKey(scheme.name), JSON.stringify(next)).catch(() => {});
+      AsyncStorage.setItem(docKey(scheme.name), JSON.stringify(next)).catch(() => { });
       return next;
     });
   };
@@ -143,7 +145,7 @@ export default function SchemeCard({ scheme, lang = "en" }) {
     const lines = [`${scheme.name}${scheme.type ? ` (${scheme.type})` : ""}`, stLabel];
     if (amtText) lines.push(t("amount")(amtText));
     if (scheme.url) lines.push(scheme.url);
-    Share.share({ message: lines.join("\n") }).catch(() => {});
+    Share.share({ message: lines.join("\n") }).catch(() => { });
   };
 
   const visibleBenefits = open ? benefits : benefits.slice(0, 2);
@@ -198,7 +200,7 @@ export default function SchemeCard({ scheme, lang = "en" }) {
             <View style={s.docsWrap}>
               <View style={s.docsHead}>
                 <Ring pct={docs.length ? (docsReady / docs.length) * 100 : 0}
-                      color="#0E7490" size={36} />
+                  color="#0E7490" size={36} />
                 <View style={{ flex: 1 }}>
                   <Text style={s.docsTitle}>{t("docs")}</Text>
                   <Text style={s.docsMeta}>{t("docsProgress")(docsReady, docs.length)}</Text>
@@ -206,7 +208,7 @@ export default function SchemeCard({ scheme, lang = "en" }) {
               </View>
               {docs.map((doc, i) => (
                 <Pressable key={i} onPress={() => toggleDoc(doc)} style={s.docRow}
-                           disabled={key === "not_eligible"}>
+                  disabled={key === "not_eligible"}>
                   <View style={[s.box, checked[doc] && s.boxOn]}>
                     {!!checked[doc] && <Text style={s.boxTick}>✓</Text>}
                   </View>
@@ -242,33 +244,39 @@ export default function SchemeCard({ scheme, lang = "en" }) {
 }
 
 const s = StyleSheet.create({
-  card: { backgroundColor: "#fff", borderRadius: 16, padding: 16, marginBottom: 12,
-          elevation: 2, shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 6 },
-  headRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  name: { fontSize: 16, fontWeight: "800", color: "#111827" },
-  type: { fontSize: 12, color: "#6B7280", marginTop: 2 },
-  pill: { alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4,
-          borderRadius: 999, marginTop: 10 },
-  amount: { fontSize: 15, fontWeight: "700", color: "#0E7490", marginTop: 10 },
-  bullet: { fontSize: 13, color: "#374151", marginTop: 4, lineHeight: 19 },
-  details: { marginTop: 10, borderTopWidth: 1, borderTopColor: "#F1F5F9", paddingTop: 10 },
-  note: { fontSize: 12, color: "#92400E", marginTop: 2, fontStyle: "italic", lineHeight: 18 },
-  critRow: { flexDirection: "row", gap: 8, marginTop: 6, alignItems: "flex-start" },
-  critText: { flex: 1, fontSize: 13, color: "#374151", lineHeight: 18 },
-  docsWrap: { marginTop: 12, backgroundColor: "#F8FAFC", borderRadius: 12, padding: 12 },
-  docsHead: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 6 },
-  docsTitle: { fontSize: 13, fontWeight: "700", color: "#111827" },
-  docsMeta: { fontSize: 11, color: "#6B7280", marginTop: 1 },
-  docRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 6 },
-  box: { width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: "#94A3B8",
-         backgroundColor: "#fff", alignItems: "center", justifyContent: "center" },
-  boxOn: { backgroundColor: "#0E7490", borderColor: "#0E7490" },
-  boxTick: { color: "#fff", fontSize: 13, fontWeight: "800", marginTop: -1 },
-  docText: { flex: 1, fontSize: 13, color: "#111827", lineHeight: 18 },
+  card: {
+    backgroundColor: "#fff", borderRadius: 24, padding: 24, marginBottom: 16,
+    elevation: 3, shadowColor: "#000", shadowOpacity: 0.05, shadowOffset: { width: 0, height: 4 }, shadowRadius: 12, borderWidth: 1, borderColor: '#e5e7eb'
+  },
+  headRow: { flexDirection: "row", alignItems: "center", gap: 14 },
+  name: { fontSize: 18, fontWeight: "800", color: "#111827", letterSpacing: -0.5 },
+  type: { fontSize: 14, color: "#6B7280", marginTop: 4, fontWeight: '500' },
+  pill: {
+    alignSelf: "flex-start", paddingHorizontal: 12, paddingVertical: 6,
+    borderRadius: 999, marginTop: 12
+  },
+  amount: { fontSize: 17, fontWeight: "800", color: "#0ea5e9", marginTop: 12 },
+  bullet: { fontSize: 14, color: "#374151", marginTop: 6, lineHeight: 22 },
+  details: { marginTop: 14, borderTopWidth: 1, borderTopColor: "#F1F5F9", paddingTop: 14 },
+  note: { fontSize: 13, color: "#92400E", marginTop: 4, fontStyle: "italic", lineHeight: 20 },
+  critRow: { flexDirection: "row", gap: 10, marginTop: 8, alignItems: "flex-start" },
+  critText: { flex: 1, fontSize: 14, color: "#374151", lineHeight: 20 },
+  docsWrap: { marginTop: 16, backgroundColor: "#f8fafc", borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#e2e8f0' },
+  docsHead: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 8 },
+  docsTitle: { fontSize: 15, fontWeight: "800", color: "#111827" },
+  docsMeta: { fontSize: 13, color: "#6B7280", marginTop: 2 },
+  docRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 8 },
+  box: {
+    width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: "#94A3B8",
+    backgroundColor: "#fff", alignItems: "center", justifyContent: "center"
+  },
+  boxOn: { backgroundColor: "#0ea5e9", borderColor: "#0ea5e9" },
+  boxTick: { color: "#fff", fontSize: 14, fontWeight: "800", marginTop: -1 },
+  docText: { flex: 1, fontSize: 14, color: "#111827", lineHeight: 20 },
   docDone: { color: "#94A3B8", textDecorationLine: "line-through" },
-  btnRow: { flexDirection: "row", gap: 10, marginTop: 12, flexWrap: "wrap" },
-  btn: { backgroundColor: "#0E7490", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
-  btnText: { color: "#fff", fontWeight: "600", fontSize: 13 },
-  ghostBtn: { backgroundColor: "#F1F5F9", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-  ghostText: { color: "#334155", fontWeight: "600", fontSize: 13 },
+  btnRow: { flexDirection: "row", gap: 12, marginTop: 16, flexWrap: "wrap" },
+  btn: { backgroundColor: "#0ea5e9", paddingHorizontal: 20, paddingVertical: 12, borderRadius: 20, shadowColor: "#0ea5e9", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  btnText: { color: "#fff", fontWeight: "700", fontSize: 14 },
+  ghostBtn: { backgroundColor: "#f3f4f6", paddingHorizontal: 16, paddingVertical: 12, borderRadius: 20 },
+  ghostText: { color: "#374151", fontWeight: "700", fontSize: 14 },
 });
