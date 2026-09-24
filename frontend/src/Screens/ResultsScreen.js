@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+﻿import React, { useMemo } from "react";
 import { View, Text, StyleSheet, ScrollView, Pressable } from "react-native";
 import { C, S } from "../theme";
 import SchemeCard, { normalizeStatus, formatINR } from "../components/SchemeCard";
@@ -19,21 +19,6 @@ const UI = {
     headline: "तुमच्या योजनांचे जुळण्या", retake: "↺ उत्तरे बदला",
     chart: "कमाल कव्हरेज तुलना", chat: "💬 यांबाबत विचारा",
     none: "जुळण्या योजना आढळल्या नाहीत — उत्तरे बदला किंवा चॅटमध्ये विचारा."
-  },
-  bn: {
-    headline: "আপনার স্কিম ম্যাচগুলো", retake: "↺ উত্তর পরিবর্তন করুন",
-    chart: "সর্বোচ্চ কভারেজ তুলনা", chat: "💬 এগুলো নিয়ে জিজ্ঞাসা করুন",
-    none: "কোনো স্কিম পাওয়া যায়নি — উত্তর পরিবর্তন করুন অথবা চ্যাটে জিজ্ঞাসা করুন।"
-  },
-  ta: {
-    headline: "உங்களுக்கு பொருத்தமான திட்டங்கள்", retake: "↺ பதில்களை மாற்று",
-    chart: "அதிகபட்ச கவரேஜ் ஒப்பீடு", chat: "💬 இதை பற்றி கேள்",
-    none: "பொருத்தமான திட்டங்கள் கிடைக்கவில்லை — பதில்களை மாற்றுங்கள் அல்லது உரையாடலில் கேட்கவும்."
-  },
-  gu: {
-    headline: "તમારી યોજનાઓનો મેળ", retake: "↺ જવાબો સંપાદિત કરો",
-    chart: "મહત્તમ કવરેજ સરખામણી", chat: "💬 આના વિશે પૂછો",
-    none: "કોઈ યોજના મળી નથી — તમારા જવાબો સંપાદિત કરો અથવા ચેટમાં પૂછો."
   },
 };
 

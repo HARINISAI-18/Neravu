@@ -1163,45 +1163,6 @@ def intake_match(req: IntakeMatchRequest):
             "profile": profile_summary,
             "lang": lang}
 
-_UI_CACHE = {}
-
-@app.get("/api/locales")
-def get_locales(lang: str = "en"):
-    """Dynamically translates the UI strings using Gemini if not cached."""
-    if lang == "en":
-        with open("ui_keys_base.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-            
-    if lang in _UI_CACHE:
-        return _UI_CACHE[lang]
-        
-    with open("ui_keys_base.json", "r", encoding="utf-8") as f:
-        base_dict = json.load(f)
-        
-    prompt = f"""
-Translate the following JSON dictionary values into the natural language code '{lang}'. 
-Keep the JSON keys exactly the same. Only translate the values.
-Return ONLY valid JSON, nothing else.
-
-```json
-{json.dumps(base_dict, indent=2)}
-```
-"""
-    try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        res = model.generate_content(prompt)
-        text = res.text.strip()
-        if text.startswith("```json"): text = text[7:]
-        if text.startswith("```"): text = text[3:]
-        if text.endswith("```"): text = text[:-3]
-        
-        translated_dict = json.loads(text.strip())
-        _UI_CACHE[lang] = translated_dict
-        return translated_dict
-    except Exception as e:
-        log.error("Failed to translate UI dict to %s: %s", lang, e)
-        return base_dict
-
 @app.get("/api/schemes")
 def schemes_debug():
     """Verify how schemes.xlsx was parsed (income caps, states, flags)."""

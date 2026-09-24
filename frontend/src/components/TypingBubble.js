@@ -2,9 +2,7 @@ import React, { useState, useEffect, memo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { C, S } from '../theme';
 
-import { T } from '../locales';
-
-export default memo(function TypingBubble({ onCancel, lang = 'en' }) {
+export default memo(function TypingBubble({ onCancel }) {
   const [sec, setSec] = useState(0);
   useEffect(() => {
     const t = setInterval(() => setSec(v => v + 1), 1000);
@@ -22,10 +20,10 @@ export default memo(function TypingBubble({ onCancel, lang = 'en' }) {
         <View style={[st.dot, { opacity: 0.25 + 0.25 * ((sec + 2) % 3) }]} />
       </View>
       <Text style={st.text}>
-        {T[lang]?.retrieving || T.en.retrieving} {mm > 0 ? `${mm}:` : ''}{ss}
+        Retrieving evidence &amp; generating… {mm > 0 ? `${mm}:` : ''}{ss}
       </Text>
       <Pressable onPress={onCancel} hitSlop={8}>
-        <Text style={st.cancel}>{T[lang]?.cancel || T.en.cancel}</Text>
+        <Text style={st.cancel}>Cancel</Text>
       </Pressable>
     </View>
   );

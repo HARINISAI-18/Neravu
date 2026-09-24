@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, Pressable, StyleSheet, Platform } from 'react-native';
 import { C } from '../theme';
 import { getBaseUrl, getTimeoutMs, saveConfig, TIMEOUT_OPTIONS } from '../api';
-import { T } from '../locales';
 
-export default function SettingsModal({ visible, onClose, onSaved, lang = 'en' }) {
+export default function SettingsModal({ visible, onClose, onSaved }) {
   const [url, setUrl] = useState('');
   const [ms, setMs] = useState(600000);
 
@@ -22,9 +21,9 @@ export default function SettingsModal({ visible, onClose, onSaved, lang = 'en' }
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={st.backdrop}>
         <View style={st.sheet}>
-          <Text style={st.title}>{T[lang]?.settings || T.en.settings}</Text>
+          <Text style={st.title}>Backend settings</Text>
 
-          <Text style={st.label}>{T[lang]?.hostIp || T.en.hostIp}</Text>
+          <Text style={st.label}>Server URL</Text>
           <TextInput
             style={st.input} value={url} onChangeText={setUrl}
             autoCapitalize="none" autoCorrect={false} keyboardType="url"
@@ -35,7 +34,7 @@ export default function SettingsModal({ visible, onClose, onSaved, lang = 'en' }
             http://10.0.2.2:8000 · Physical phone: your PC's LAN IP (same Wi-Fi)
           </Text>
 
-          <Text style={st.label}>{T[lang]?.timeout || T.en.timeout}</Text>
+          <Text style={st.label}>Answer timeout</Text>
           <View style={st.row}>
             {TIMEOUT_OPTIONS.map(o => (
               <Pressable key={o.ms} onPress={() => setMs(o.ms)}
@@ -47,10 +46,10 @@ export default function SettingsModal({ visible, onClose, onSaved, lang = 'en' }
 
           <View style={st.row}>
             <Pressable style={[st.btn, st.btnGhost]} onPress={onClose}>
-              <Text style={st.btnGhostText}>{T[lang]?.cancel || T.en.cancel}</Text>
+              <Text style={st.btnGhostText}>Cancel</Text>
             </Pressable>
             <Pressable style={st.btn} onPress={save}>
-              <Text style={st.btnText}>{T[lang]?.saveReload || T.en.saveReload}</Text>
+              <Text style={st.btnText}>Save &amp; reconnect</Text>
             </Pressable>
           </View>
         </View>

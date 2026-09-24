@@ -3,8 +3,6 @@ import { View, Text, StyleSheet, Pressable, Modal, ScrollView, Platform } from '
 import { C, S } from '../theme';
 import { parse } from '../richText';
 
-import { T } from '../locales';
-
 /* ---------- inline segment renderer ---------- */
 const Segments = memo(function Segments({ segs, onCite, baseStyle }) {
     return (
@@ -37,7 +35,7 @@ const SourceDetail = memo(function SourceDetail({ s }) {
 });
 
 /* ---------- main message bubble ---------- */
-const MessageItem = memo(function MessageItem({ item, isLatest, suggestions, onSend, lang = 'en' }) {
+const MessageItem = memo(function MessageItem({ item, isLatest, suggestions, onSend }) {
     const [citeIdx, setCiteIdx] = useState(-1);   // citation → modal
     const [copied, setCopied] = useState(false);
     const onCite = useCallback(i => setCiteIdx(i), []);
@@ -51,7 +49,7 @@ const MessageItem = memo(function MessageItem({ item, isLatest, suggestions, onS
                         <Text style={st.userText} selectable>{item.text}</Text>
                     </View>
                     <View style={st.footerEnd}>
-                        <Text style={st.footerText}>{T[lang]?.sent || "Sent"}</Text>
+                        <Text style={st.footerText}>Sent</Text>
                     </View>
                 </View>
             </View>
@@ -127,7 +125,7 @@ const MessageItem = memo(function MessageItem({ item, isLatest, suggestions, onS
 
                     {hasSources && (
                         <View style={{ marginTop: 12 }}>
-                            <Text style={st.sourcesTitle}>{T[lang]?.sources || T.en.sources} ({item.sources.length})</Text>
+                            <Text style={st.sourcesTitle}>EVIDENCE ({item.sources.length}) — tap a source to read</Text>
                             {item.sources.map((s, i) => (
                                 <Pressable key={`${i}-${s.citation}`} style={st.srcRow}
                                     onPress={() => setCiteIdx(i)}>
@@ -142,7 +140,7 @@ const MessageItem = memo(function MessageItem({ item, isLatest, suggestions, onS
 
                 <View style={st.footerStart}>
                     <Pressable onPress={copy} hitSlop={6} style={st.footerAction}>
-                        <Text style={st.copyBtn}>{copied ? `${T[lang]?.copied || T.en.copied}` : `${T[lang]?.copy || T.en.copy}`}</Text>
+                        <Text style={st.copyBtn}>{copied ? 'Copied ✓' : 'Copy'}</Text>
                     </Pressable>
                 </View>
             </View>

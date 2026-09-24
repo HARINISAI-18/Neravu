@@ -20,7 +20,7 @@ import SettingsModal from './src/components/SettingsModal';
 import IntakeQuiz from './src/components/IntakeQuiz';
 import MicButton from './src/components/MicButton';
 import ResultsScreen from './src/Screens/ResultsScreen';
-import { T, fetchLocale } from './src/locales';
+
 let nextId = 1;
 
 const INTAKE_DONE_KEY = '@pmjay/intakeDone';
@@ -37,7 +37,87 @@ const LANGS = [
   { code: 'gu', label: 'ગુજરાતી', short: 'ગુ' },
 ];
 
-// L removed, using T from src/locales.js
+const L = {
+  en: {
+    appTitle: "PM-JAY Assistant",
+    schemesBtn: "Schemes",
+    newBtn: "＋ New",
+    title: "How can we help today?",
+    desc: "Your recommended schemes are ready. You can now ask me directly about PM-JAY coverage, eligibility, hospitals, or the claim process. All answers are grounded in official guidelines.",
+    ask: "Ask anything…",
+    wait: "Waiting for backend…",
+    prep: (s) => `Preparing: ${s}`,
+    conn: "Connecting to backend…",
+    readyPrefix: "Ready"
+  },
+  hi: {
+    appTitle: "PM-JAY सहायक",
+    schemesBtn: "योजनाएं",
+    newBtn: "＋ नया",
+    title: "आज हम आपकी कैसे मदद कर सकते हैं?",
+    desc: "आपकी अनुशंसित योजनाएं तैयार हैं। अब आप सीधे पीएम-जय कवरेज, पात्रता, अस्पतालों या दावों की प्रक्रिया के बारे में पूछ सकते हैं।",
+    ask: "कुछ भी पूछें…",
+    wait: "बैकएंड का इंतजार…",
+    prep: (s) => `तैयार कर रहा है: ${s}`,
+    conn: "बैकएंड से जुड़ रहा है…",
+    readyPrefix: "तैयार"
+  },
+  mr: {
+    appTitle: "PM-JAY सहाय्यक",
+    schemesBtn: "योजना",
+    newBtn: "＋ नवीन",
+    title: "आम्ही आज कशी मदत करू शकतो?",
+    desc: "तुमच्या शिफारस केलेल्या योजना तयार आहेत. तुम्ही आता पीएम-जय कव्हरेज, पात्रता, रुग्णालये किंवा दाव्याच्या प्रक्रियेबद्दल थेट विचारू शकता.",
+    ask: "काहीही विचारा…",
+    wait: "बॅकएंडची वाट पाहत आहे…",
+    prep: (s) => `तयार करत आहे: ${s}`,
+    conn: "बॅकएंडशी कनेक्ट करत आहे…",
+    readyPrefix: "तयार",
+    suggs: ["पीएम-जय कँसर पूर्व-मंजुरी प्रक्रिया काय आहे?", "कोणती कागदपत्रे लागतात?", "दावा निकाली काढण्याची प्रक्रिया काय आहे?", "तक्रार कशी नोंदवायची?"]
+  },
+  bn: {
+    appTitle: "PM-JAY সহকারী",
+    schemesBtn: "প্রকল্পসমূহ",
+    newBtn: "＋ নতুন",
+    title: "আজ আমরা কীভাবে সাহায্য করতে পারি?",
+    desc: "আপনার স্কিম প্রস্তুত। আপনি কভারেজ, যোগ্যতা, হাসপাতাল বা দাবি প্রক্রিয়া সম্পর্কে জিজ্ঞাসা করতে পারেন।",
+    ask: "যেকোনো কিছু জিজ্ঞাসা করুন…",
+    wait: "অপেক্ষারত…",
+    prep: (s) => `প্রস্তুত হচ্ছে: ${s}`,
+    conn: "সংযোগ হচ্ছে…",
+    readyPrefix: "প্রস্তুত",
+    suggs: ["PM-JAY ক্যান্সার প্রাক-অনুমোদন প্রক্রিয়া কি?", "কী কী নথি প্রয়োজন?", "দাবি নিষ্পত্তির প্রক্রিয়া কি?", "কীভাবে অভিযোগ জানাতে পারি?"]
+  },
+  ta: {
+    appTitle: "PM-JAY உதவியாளர்",
+    schemesBtn: "திட்டங்கள்",
+    newBtn: "＋ புதிய",
+    title: "இன்று நாங்கள் எப்படி உதவ முடியும்?",
+    desc: "உங்கள் திட்டங்கள் தயாராக உள்ளன.PM-JAY தகுதி, மருத்துவமனைகள் பற்றி நேரடியாகக் கேட்கலாம்.",
+    ask: "ஏதேனும் கேளுங்கள்…",
+    wait: "காத்திருங்கள்…",
+    prep: (s) => `தயாராகிறது: ${s}`,
+    conn: "இணைக்கிறது…",
+    readyPrefix: "தயார்",
+    suggs: ["புற்றுநோய் முன் அனுமதி செயல்முறை என்ன?", "என்ன ஆவணங்கள் தேவை?", "உரிமை கோரல் செயல்முறை என்ன?", "குறைகளை எவ்வாறு புகாரளிப்பது?"]
+  },
+  gu: {
+    appTitle: "PM-JAY સહાયક",
+    schemesBtn: "યોજનાઓ",
+    newBtn: "＋ નવી",
+    title: "આજે અમે તમને કેવી રીતે મદદ કરી શકીએ?",
+    desc: "તમારી યોજનાઓ તૈયાર છે. તમે કવરેજ, પાત્રતા, હોસ્પિટલ વિશે સીધું પૂછી શકો છો.",
+    ask: "કંઈ પણ પૂછો…",
+    wait: "રાહ જુઓ…",
+    prep: (s) => `તૈયાર છે: ${s}`,
+    conn: "જોડાઈ રહ્યું છે…",
+    readyPrefix: "તૈયાર",
+    suggs: ["PM-JAY કેન્સર પૂર્વ-મંજૂરી પ્રક્રિયા શું છે?", "કયા દસ્તાવેજો જરૂરી છે?", "દાવાની પતાવટ પ્રક્રિયા શું છે?", "ફરિયાદ કેવી રીતે નોંધાવવી?"]
+  },
+};
+
+L['en'].suggs = ["What is the PM-JAY cancer pre-authorisation process?", "What documents are required?", "What is the claim settlement process?", "How can a beneficiary file a grievance?"];
+L['hi'].suggs = ["पीएम-जय कैंसर के लिए पूर्व-प्राधिकरण प्रक्रिया क्या है?", "किन दस्तावेजों की आवश्यकता है?", "दावा निपटान प्रक्रिया क्या है?", "शिकायत कैसे दर्ज करें?"];
 
 function friendlyError(e) {
   if (e?.timeout)
@@ -93,13 +173,10 @@ export default function App() {
 
     const loadExtras = async () => {
       try {
-        await fetchLocale(lang);
-      } catch { }
-      try {
         const d = await fetchSuggestions(lang);
-        if (alive) setSuggestions(d.questions || T[lang]?.suggs || T.en.suggs || []);
+        if (alive) setSuggestions(d.questions || L[lang]?.suggs || L['en'].suggs);
       } catch {
-        if (alive) setSuggestions(T[lang]?.suggs || T.en.suggs || []);
+        if (alive) setSuggestions(L[lang]?.suggs || L['en'].suggs);
       }
       try {
         const iq = await getIntakeQuestions(lang);
@@ -251,12 +328,12 @@ export default function App() {
     if (health.error) return { text: `Failed: ${health.error}`, cls: st.stOff };
     if (health.ready)
       return {
-        text: `${T[lang]?.readyPrefix || T.en.readyPrefix} · ${health.documents} docs · ${health.chunks} chunks · `
+        text: `${L[lang].readyPrefix} · ${health.documents} docs · ${health.chunks} chunks · `
           + `${health.schemes ?? '?'} schemes · ${health.cuda ? 'GPU' : 'CPU'}`,
         cls: st.stOk,
       };
     return { text: `Loading: ${health.stage}`, cls: st.stLoad };
-  }, [health, lang]);
+  }, [health]);
 
   const canSend = input.trim().length > 0 && !sending && health?.ready;
 
@@ -275,7 +352,7 @@ export default function App() {
                   <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <Path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                   </Svg>
-                  <Text style={st.title}>{T[lang]?.title || T.en.title}</Text>
+                  <Text style={st.title}>{L[lang].appTitle}</Text>
                 </View>
                 <Text style={[st.statusText, status.cls]} numberOfLines={1}>{status.text}</Text>
               </View>
@@ -283,10 +360,10 @@ export default function App() {
               {screen === 'chat' && (
                 <>
                   <Pressable onPress={reopenIntake} hitSlop={8} style={st.outlineBtn}>
-                    <Text style={st.outlineBtnText}>{T[lang]?.schemesBtn || T.en.schemesBtn}</Text>
+                    <Text style={st.outlineBtnText}>{L[lang].schemesBtn}</Text>
                   </Pressable>
                   <Pressable onPress={newChat} hitSlop={8} style={st.solidBtn}>
-                    <Text style={st.solidBtnText}>{T[lang]?.newBtn || T.en.newBtn}</Text>
+                    <Text style={st.solidBtnText}>{L[lang].newBtn}</Text>
                   </Pressable>
                 </>
               )}
@@ -352,10 +429,10 @@ export default function App() {
                       <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                     </Svg>
                   </View>
-                  <Text style={st.quizHello}>{T[lang]?.quizHello || T.en.quizHello}</Text>
+                  <Text style={st.quizHello}>Welcome to PM-JAY Helper</Text>
                 </View>
                 <Text style={st.quizLead}>
-                  {T[lang]?.quizLead || T.en.quizLead}
+                  Let's find the best healthcare schemes (PM-JAY, Rashtriya Arogya Nidhi, etc.) for you. Answer a few short questions to get started.
                 </Text>
                 <IntakeQuiz
                   key={lang}
@@ -383,7 +460,7 @@ export default function App() {
           {screen === 'loading' && (
             <View style={st.center}>
               <Text style={st.loadingTxt}>
-                {health?.stage ? (T[lang]?.wait || T.en.wait) : (T[lang]?.conn || T.en.conn)}
+                {health?.stage ? L[lang].prep(health.stage) : L[lang].conn}
               </Text>
             </View>
           )}
@@ -399,9 +476,9 @@ export default function App() {
                         <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                       </Svg>
                     </View>
-                    <Text style={st.emptyTitle}>{T[lang]?.title || T.en.title}</Text>
+                    <Text style={st.emptyTitle}>{L[lang].title}</Text>
                     <Text style={st.emptyBody}>
-                      {T[lang]?.desc || T.en.desc}
+                      {L[lang].desc}
                     </Text>
                   </View>
                 </View>
@@ -424,7 +501,7 @@ export default function App() {
 
               {sending && <TypingBubble onCancel={cancel} />}
 
-              {suggestions?.length > 0 && !sending && msgs.length === 0 && (
+              {suggestions.length > 0 && !sending && msgs.length === 0 && (
                 <View style={st.chipsWrapper}>
                   {suggestions.map(q => (
                     <Pressable key={q} style={st.chip} onPress={() => send(q)}>
@@ -444,8 +521,8 @@ export default function App() {
                     multiline={true}
                     blurOnSubmit={false}
                     placeholder={health?.ready
-                      ? (T[lang]?.ask || T.en.ask)
-                      : (T[lang]?.wait || T.en.wait)}
+                      ? L[lang].ask
+                      : L[lang].wait}
                     placeholderTextColor="#cbd5e1"
                     editable={!sending}
                   />
