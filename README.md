@@ -256,3 +256,15 @@ npx expo lint
 
 The backend does not currently define a test command. Its health endpoint is
 the quickest smoke test after startup.
+
+## Future Improvements
+
+The Neravu project is designed to evolve into a comprehensive operations suite. Planned milestones include:
+
+- **Fully Vectorized Data Hub:** Migrating to a massive-scale unified vector database where all dynamic PM-JAY and healthcare schema data is persistently stored and served from central RAG storage.
+- **Live Transcription & Translation:** Building real-time dynamic transcription and multi-lingual translation for speech-to-speech cross-language interactions.
+- **Insurance Flow Management:** A fully integrated end-to-end operational pipeline to track real-time authorization requests and claim settlements automatically.
+- **Streamlined Insurance Drafting:** AI-powered assistance for quickly auto-drafting necessary pre-authorization request forms and procedural justifications.
+- **Insurance Summaries:** Generating automatic, easy-to-understand AI breakdowns of complex case files and coverage documents for rapid intake.
+- **Docket Creation:** Programmatic generation of ready-to-file legal or administrative case dockets, drastically cutting down manual documentation workload.
+- **Citizen Feedback & Policy-Making:** An analytics dashboard that aggregates user interactions, concerns, and denials to actively inform government policy adjustments and localized administrative decisions.
