@@ -93,7 +93,7 @@ const MessageItem = memo(function MessageItem({ item, isLatest, suggestions, onS
             <View style={[st.msgWrapper, { alignItems: 'flex-start' }]}>
 
                 <View style={st.headerStart}>
-                    <Text style={st.headerName}>PM-JAY Assistant</Text>
+                    <Text style={st.headerName}>Neravu</Text>
                 </View>
 
                 <View style={st.botBubble}>

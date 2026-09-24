@@ -1,6 +1,6 @@
 # PM-JAY Assistant
 
-PM-JAY Assistant is a retrieval-augmented chatbot for answering questions from
+Neravu Assistant is a retrieval-augmented chatbot for answering questions from
 PM-JAY documents. It has:
 
 - A **FastAPI backend** that extracts PDF content, builds BM25/FAISS indexes,
