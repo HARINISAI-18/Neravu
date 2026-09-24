@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Neravu",
+    "slug": "pmjay-universal",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#0c4a6e",
+    "icon": "./assets/neravu-logo.png",
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/neravu-logo.png"
+    },
+    "plugins": [
+      "expo-audio"
+    ]
+  }
+}
