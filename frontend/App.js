@@ -1350,6 +1350,7 @@ export default function App() {
 
               {suggestions.length > 0 &&
                 !sending &&
+                Platform.OS === 'web' &&
                 msgs.length === 0 && (
                   <View
                     style={
