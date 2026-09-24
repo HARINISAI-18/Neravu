@@ -1,6 +1,6 @@
-# PM-JAY Assistant
+# Neravu
 
-Neravu Assistant is a retrieval-augmented chatbot for answering questions from
+Neravu is an optimized retrieval-augmented chatbot for answering questions from
 PM-JAY documents. It has:
 
 - A **FastAPI backend** that extracts PDF content, builds BM25/FAISS indexes,
@@ -172,7 +172,9 @@ The backend supports these environment variables:
 | `EMBED_MODEL` | `intfloat/multilingual-e5-small` | Sentence embedding model |
 | `RERANK_MODEL` | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Reranking model |
 | `GEN_MODEL` | `Qwen/Qwen2.5-1.5B-Instruct` | Answer generation model |
-| `MAX_NEW_TOKENS` | `500` | Maximum generated answer length |
+| `MAX_NEW_TOKENS` | `250` | Maximum generated answer length |
+| `GEN_BACKEND` | `local` | Set to `gemini` to use Google Gemini (much faster CPU response times) |
+| `GOOGLE_API_KEY` | | Set this if `GEN_BACKEND` is `gemini` |
 | `RETRIEVAL_ONLY` | `0` | Set to `1` to skip LLM generation |
 | `TORCH_THREADS` | CPU count | CPU thread count when CUDA is unavailable |
 | `PORT` | `8000` | Backend listening port when running `app.py` |
