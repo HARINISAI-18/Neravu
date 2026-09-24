@@ -12,9 +12,10 @@ const LANG_KEY = "@pmjay/lang";
 // Web browser → localhost
 // Android emulator → host machine
 export const DEFAULT_BASE_URL =
-  Platform.OS === "android"
+  process.env.EXPO_PUBLIC_API_URL ||
+  (Platform.OS === "android"
     ? "http://10.0.2.2:8000"
-    : "http://localhost:8000";
+    : "http://localhost:8000");
 
 export const TIMEOUT_OPTIONS = [
   { label: "2 min", ms: 120000 },
