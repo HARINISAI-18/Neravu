@@ -48,3 +48,11 @@ yarn-error.*
 /android
 __pycache__/
 *.pyc
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Audio caches
+backend/tts_cache/
+backend/tmp_audio/

@@ -30,9 +30,11 @@ export default memo(function TypingBubble({ onCancel }) {
 });
 
 const st = StyleSheet.create({
-  box: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: S.pad,
-         marginBottom: 8, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border,
-         borderRadius: S.radius, paddingHorizontal: 12, paddingVertical: 10 },
+  box: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: S.pad,
+    marginBottom: 8, backgroundColor: C.surface, borderWidth: 1, borderColor: C.border,
+    borderRadius: S.radius, paddingHorizontal: 12, paddingVertical: 10
+  },
   dots: { flexDirection: 'row', gap: 4 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.primary },
   text: { flex: 1, fontSize: 12, color: C.muted },

@@ -32,7 +32,92 @@ const LANGS = [
   { code: 'en', label: 'English', short: 'EN' },
   { code: 'hi', label: 'हिन्दी', short: 'हि' },
   { code: 'mr', label: 'मराठी', short: 'म' },
+  { code: 'bn', label: 'বাংলা', short: 'বা' },
+  { code: 'ta', label: 'தமிழ்', short: 'த' },
+  { code: 'gu', label: 'ગુજરાતી', short: 'ગુ' },
 ];
+
+const L = {
+  en: {
+    appTitle: "PM-JAY Assistant",
+    schemesBtn: "Schemes",
+    newBtn: "＋ New",
+    title: "How can we help today?",
+    desc: "Your recommended schemes are ready. You can now ask me directly about PM-JAY coverage, eligibility, hospitals, or the claim process. All answers are grounded in official guidelines.",
+    ask: "Ask anything…",
+    wait: "Waiting for backend…",
+    prep: (s) => `Preparing: ${s}`,
+    conn: "Connecting to backend…",
+    readyPrefix: "Ready"
+  },
+  hi: {
+    appTitle: "PM-JAY सहायक",
+    schemesBtn: "योजनाएं",
+    newBtn: "＋ नया",
+    title: "आज हम आपकी कैसे मदद कर सकते हैं?",
+    desc: "आपकी अनुशंसित योजनाएं तैयार हैं। अब आप सीधे पीएम-जय कवरेज, पात्रता, अस्पतालों या दावों की प्रक्रिया के बारे में पूछ सकते हैं।",
+    ask: "कुछ भी पूछें…",
+    wait: "बैकएंड का इंतजार…",
+    prep: (s) => `तैयार कर रहा है: ${s}`,
+    conn: "बैकएंड से जुड़ रहा है…",
+    readyPrefix: "तैयार"
+  },
+  mr: {
+    appTitle: "PM-JAY सहाय्यक",
+    schemesBtn: "योजना",
+    newBtn: "＋ नवीन",
+    title: "आम्ही आज कशी मदत करू शकतो?",
+    desc: "तुमच्या शिफारस केलेल्या योजना तयार आहेत. तुम्ही आता पीएम-जय कव्हरेज, पात्रता, रुग्णालये किंवा दाव्याच्या प्रक्रियेबद्दल थेट विचारू शकता.",
+    ask: "काहीही विचारा…",
+    wait: "बॅकएंडची वाट पाहत आहे…",
+    prep: (s) => `तयार करत आहे: ${s}`,
+    conn: "बॅकएंडशी कनेक्ट करत आहे…",
+    readyPrefix: "तयार",
+    suggs: ["पीएम-जय कँसर पूर्व-मंजुरी प्रक्रिया काय आहे?", "कोणती कागदपत्रे लागतात?", "दावा निकाली काढण्याची प्रक्रिया काय आहे?", "तक्रार कशी नोंदवायची?"]
+  },
+  bn: {
+    appTitle: "PM-JAY সহকারী",
+    schemesBtn: "প্রকল্পসমূহ",
+    newBtn: "＋ নতুন",
+    title: "আজ আমরা কীভাবে সাহায্য করতে পারি?",
+    desc: "আপনার স্কিম প্রস্তুত। আপনি কভারেজ, যোগ্যতা, হাসপাতাল বা দাবি প্রক্রিয়া সম্পর্কে জিজ্ঞাসা করতে পারেন।",
+    ask: "যেকোনো কিছু জিজ্ঞাসা করুন…",
+    wait: "অপেক্ষারত…",
+    prep: (s) => `প্রস্তুত হচ্ছে: ${s}`,
+    conn: "সংযোগ হচ্ছে…",
+    readyPrefix: "প্রস্তুত",
+    suggs: ["PM-JAY ক্যান্সার প্রাক-অনুমোদন প্রক্রিয়া কি?", "কী কী নথি প্রয়োজন?", "দাবি নিষ্পত্তির প্রক্রিয়া কি?", "কীভাবে অভিযোগ জানাতে পারি?"]
+  },
+  ta: {
+    appTitle: "PM-JAY உதவியாளர்",
+    schemesBtn: "திட்டங்கள்",
+    newBtn: "＋ புதிய",
+    title: "இன்று நாங்கள் எப்படி உதவ முடியும்?",
+    desc: "உங்கள் திட்டங்கள் தயாராக உள்ளன.PM-JAY தகுதி, மருத்துவமனைகள் பற்றி நேரடியாகக் கேட்கலாம்.",
+    ask: "ஏதேனும் கேளுங்கள்…",
+    wait: "காத்திருங்கள்…",
+    prep: (s) => `தயாராகிறது: ${s}`,
+    conn: "இணைக்கிறது…",
+    readyPrefix: "தயார்",
+    suggs: ["புற்றுநோய் முன் அனுமதி செயல்முறை என்ன?", "என்ன ஆவணங்கள் தேவை?", "உரிமை கோரல் செயல்முறை என்ன?", "குறைகளை எவ்வாறு புகாரளிப்பது?"]
+  },
+  gu: {
+    appTitle: "PM-JAY સહાયક",
+    schemesBtn: "યોજનાઓ",
+    newBtn: "＋ નવી",
+    title: "આજે અમે તમને કેવી રીતે મદદ કરી શકીએ?",
+    desc: "તમારી યોજનાઓ તૈયાર છે. તમે કવરેજ, પાત્રતા, હોસ્પિટલ વિશે સીધું પૂછી શકો છો.",
+    ask: "કંઈ પણ પૂછો…",
+    wait: "રાહ જુઓ…",
+    prep: (s) => `તૈયાર છે: ${s}`,
+    conn: "જોડાઈ રહ્યું છે…",
+    readyPrefix: "તૈયાર",
+    suggs: ["PM-JAY કેન્સર પૂર્વ-મંજૂરી પ્રક્રિયા શું છે?", "કયા દસ્તાવેજો જરૂરી છે?", "દાવાની પતાવટ પ્રક્રિયા શું છે?", "ફરિયાદ કેવી રીતે નોંધાવવી?"]
+  },
+};
+
+L['en'].suggs = ["What is the PM-JAY cancer pre-authorisation process?", "What documents are required?", "What is the claim settlement process?", "How can a beneficiary file a grievance?"];
+L['hi'].suggs = ["पीएम-जय कैंसर के लिए पूर्व-प्राधिकरण प्रक्रिया क्या है?", "किन दस्तावेजों की आवश्यकता है?", "दावा निपटान प्रक्रिया क्या है?", "शिकायत कैसे दर्ज करें?"];
 
 function friendlyError(e) {
   if (e?.timeout)
@@ -52,6 +137,7 @@ export default function App() {
   const [health, setHealth] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   const [intakeQ, setIntakeQ] = useState(null);
@@ -88,22 +174,24 @@ export default function App() {
     const loadExtras = async () => {
       try {
         const d = await fetchSuggestions(lang);
-        if (alive) setSuggestions(d.questions || []);
-      } catch { }
+        if (alive) setSuggestions(d.questions || L[lang]?.suggs || L['en'].suggs);
+      } catch {
+        if (alive) setSuggestions(L[lang]?.suggs || L['en'].suggs);
+      }
       try {
         const iq = await getIntakeQuestions(lang);
-        if (alive && iq.questions?.length) {
-          setIntakeQ(iq.questions);
-          // ★ FIX 2: await the storage read BEFORE calling setScreen —
-          // state updaters must be synchronous, never return a Promise
+        if (alive) {
+          if (iq.questions?.length) setIntakeQ(iq.questions);
           try {
             const done = await AsyncStorage.getItem(INTAKE_DONE_KEY);
-            setScreen(prev => (prev === 'loading' ? (done === '1' ? 'chat' : 'quiz') : prev));
+            setScreen(prev => (prev === 'loading' ? (done === '1' ? 'chat' : (iq.questions?.length ? 'quiz' : 'chat')) : prev));
           } catch {
-            setScreen(prev => (prev === 'loading' ? 'quiz' : prev));
+            setScreen(prev => (prev === 'loading' ? (iq.questions?.length ? 'quiz' : 'chat') : prev));
           }
         }
-      } catch { }
+      } catch {
+        if (alive) setScreen(prev => (prev === 'loading' ? 'chat' : prev));
+      }
     };
 
     const check = async () => {
@@ -240,7 +328,7 @@ export default function App() {
     if (health.error) return { text: `Failed: ${health.error}`, cls: st.stOff };
     if (health.ready)
       return {
-        text: `Ready · ${health.documents} docs · ${health.chunks} chunks · `
+        text: `${L[lang].readyPrefix} · ${health.documents} docs · ${health.chunks} chunks · `
           + `${health.schemes ?? '?'} schemes · ${health.cuda ? 'GPU' : 'CPU'}`,
         cls: st.stOk,
       };
@@ -264,7 +352,7 @@ export default function App() {
                   <Svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <Path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                   </Svg>
-                  <Text style={st.title}>PM-JAY Assistant</Text>
+                  <Text style={st.title}>{L[lang].appTitle}</Text>
                 </View>
                 <Text style={[st.statusText, status.cls]} numberOfLines={1}>{status.text}</Text>
               </View>
@@ -272,20 +360,40 @@ export default function App() {
               {screen === 'chat' && (
                 <>
                   <Pressable onPress={reopenIntake} hitSlop={8} style={st.outlineBtn}>
-                    <Text style={st.outlineBtnText}>Schemes</Text>
+                    <Text style={st.outlineBtnText}>{L[lang].schemesBtn}</Text>
                   </Pressable>
                   <Pressable onPress={newChat} hitSlop={8} style={st.solidBtn}>
-                    <Text style={st.solidBtnText}>＋ New</Text>
+                    <Text style={st.solidBtnText}>{L[lang].newBtn}</Text>
                   </Pressable>
                 </>
               )}
 
-              {/* language cycle button, always visible */}
-              <Pressable onPress={cycleLang} hitSlop={8} style={st.linkBtn}>
-                <Text style={st.linkBtnText}>
-                  {LANGS.find(l => l.code === lang)?.short}
-                </Text>
-              </Pressable>
+              <View style={{ zIndex: 100 }}>
+                <Pressable onPress={() => setLangMenuOpen(!langMenuOpen)} hitSlop={8} style={st.langPill}>
+                  <Text style={st.langPillText}>
+                    {LANGS.find(l => l.code === lang)?.label} ▾
+                  </Text>
+                </Pressable>
+
+                {langMenuOpen && (
+                  <View style={st.langDropdown}>
+                    {LANGS.map(l => (
+                      <Pressable
+                        key={l.code}
+                        style={st.langDropItem}
+                        onPress={() => {
+                          setLangMenuOpen(false);
+                          chooseLang(l.code);
+                        }}
+                      >
+                        <Text style={[st.langDropText, lang === l.code && st.langDropTextActive]}>
+                          {l.label}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+              </View>
 
               <Pressable onPress={() => setSettingsOpen(true)} hitSlop={10} style={st.linkBtn}>
                 <Svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -352,7 +460,7 @@ export default function App() {
           {screen === 'loading' && (
             <View style={st.center}>
               <Text style={st.loadingTxt}>
-                {health?.stage ? `Preparing: ${health.stage}` : 'Connecting to backend…'}
+                {health?.stage ? L[lang].prep(health.stage) : L[lang].conn}
               </Text>
             </View>
           )}
@@ -368,9 +476,9 @@ export default function App() {
                         <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                       </Svg>
                     </View>
-                    <Text style={st.emptyTitle}>How can we help today?</Text>
+                    <Text style={st.emptyTitle}>{L[lang].title}</Text>
                     <Text style={st.emptyBody}>
-                      Your recommended schemes are ready. You can now ask me directly about PM-JAY coverage, eligibility, hospitals, or the claim process. All answers are grounded in official guidelines.
+                      {L[lang].desc}
                     </Text>
                   </View>
                 </View>
@@ -413,8 +521,8 @@ export default function App() {
                     multiline={true}
                     blurOnSubmit={false}
                     placeholder={health?.ready
-                      ? 'Ask anything…'
-                      : 'Waiting for backend…'}
+                      ? L[lang].ask
+                      : L[lang].wait}
                     placeholderTextColor="#cbd5e1"
                     editable={!sending}
                   />
@@ -466,6 +574,7 @@ const st = StyleSheet.create({
     paddingTop: Platform.OS === 'web' ? 24 : 44,
     paddingBottom: 0,
     backgroundColor: 'transparent',
+    zIndex: 9999, elevation: 9999,
   },
   header: {
     backgroundColor: '#09090b',
@@ -473,6 +582,7 @@ const st = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 20, paddingVertical: 14,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 6,
+    zIndex: 9999,
   },
   titleLogoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { color: '#ffffff', fontSize: 18, fontWeight: '800', letterSpacing: -0.5 },
@@ -497,8 +607,27 @@ const st = StyleSheet.create({
   },
   linkBtnText: { color: '#e4e4e7', fontSize: 14, fontWeight: '600' },
 
-  langTitle: { color: C.text, fontSize: 24, fontWeight: '800' },
-  langSub: { color: '#6b7280', fontSize: 16, marginTop: 6 },
+  langPill: {
+    paddingHorizontal: 16, paddingVertical: 8,
+    borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginLeft: 8,
+  },
+  langPillText: { color: '#f8fafc', fontSize: 13, fontWeight: '600' },
+
+  langTitle: { color: '#f8fafc', fontSize: 28, fontWeight: '800' },
+  langSub: { color: '#94a3b8', fontSize: 16, marginTop: 6 },
+  langDropdown: {
+    position: 'absolute', top: 40, right: 0, zIndex: 9999,
+    backgroundColor: '#0f172a', borderRadius: 12, borderWidth: 1, borderColor: '#334155',
+    padding: 6, minWidth: 140,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 6,
+  },
+  langDropItem: {
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 8,
+  },
+  langDropText: { color: '#cbd5e1', fontSize: 15, fontWeight: '500' },
+  langDropTextActive: { color: '#0ea5e9', fontWeight: '700' },
   langRow: { flexDirection: 'row', gap: 14, marginTop: 28 },
   langBtn2: {
     backgroundColor: C.primary, borderRadius: 24, paddingHorizontal: 32,

@@ -131,6 +131,7 @@ logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s | %(levelname)s | %(message)s")
 log = logging.getLogger("pmjay-rag")
 
+# Hot reload trigger
 if not torch.cuda.is_available():
     torch.set_num_threads(int(os.getenv("TORCH_THREADS", str(os.cpu_count() or 4))))
 
@@ -195,23 +196,23 @@ TEST_QUESTIONS = [
 # ================================================================== intents
 INTENT_TERMS = {
     "preauthorization": ["pre-authorisation", "preauthorization", "pre authorization",
-                         "pre-auth", "preauth", "authorization", "approval"],
+                         "pre-auth", "preauth", "authorization", "approval", "पूर्व-प्राधिकरण", "पूर्व मंजुरी"],
     "claims": ["claim", "claims", "claim settlement", "claim processing",
-               "adjudication", "payment", "rejection", "reconsideration"],
-    "grievance": ["grievance", "complaint", "appeal", "redressal", "denied"],
+               "adjudication", "payment", "rejection", "reconsideration", "दावा", "दावे", "निपटान"],
+    "grievance": ["grievance", "complaint", "appeal", "redressal", "denied", "शिकायत", "तक्रार"],
     "empanelment": ["empanelment", "empanelled", "hospital empanelment",
-                    "network hospital", "de-empanelment"],
+                    "network hospital", "de-empanelment", "सूचीबद्ध", "रुग्णालय नोंदणी"],
     "hospital_transaction": ["hospital transaction", "beneficiary identification",
                              "registration", "golden record", "e-card",
-                             "ayushman mitra", "pmam", "bis", "cashless"],
+                             "ayushman mitra", "pmam", "bis", "cashless", "पंजीकरण", "नोंदणी"],
     "benefit_packages": ["health benefit package", "hbp", "package", "procedure",
-                         "covered treatment", "package rate", "oncology", "cancer"],
-    "discharge": ["discharge", "discharge summary", "after treatment", "post discharge"],
+                         "covered treatment", "package rate", "oncology", "cancer", "पैकेज", "पॅकेज", "कँसर"],
+    "discharge": ["discharge", "discharge summary", "after treatment", "post discharge", "छुट्टी", "डिस्चार्ज"],
     # extended intents:
     "eligibility": ["eligib", "who can", "who is eligible", "who are eligible",
-                    "criteria", "qualif", "entitle"],
+                    "criteria", "qualif", "entitle", "पात्रता", "पात्र"],
     "general_info": ["pmjay", "pm-jay", "pm jay", "ayushman bharat",
-                     "pradhan mantri jan arogya", "yojana", "scheme"],
+                     "pradhan mantri jan arogya", "yojana", "scheme", "योजना", "आयुष्मान"],
 }
 
 DOC_BOOSTS = {
