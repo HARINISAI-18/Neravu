@@ -325,6 +325,9 @@ export default function App() {
   ========================================================== */
 
   useEffect(() => {
+    if (Platform.OS === 'web') {
+      document.title = 'Neravu';
+    }
     let alive = true;
     let timer;
     let stopped = false;
@@ -336,15 +339,15 @@ export default function App() {
         if (alive) {
           setSuggestions(
             d.questions ||
-              L[lang]?.suggs ||
-              L.en.suggs
+            L[lang]?.suggs ||
+            L.en.suggs
           );
         }
       } catch {
         if (alive) {
           setSuggestions(
             L[lang]?.suggs ||
-              L.en.suggs
+            L.en.suggs
           );
         }
       }
@@ -586,12 +589,12 @@ export default function App() {
         AsyncStorage.setItem(
           INTAKE_DONE_KEY,
           '1'
-        ).catch(() => {});
+        ).catch(() => { });
 
         AsyncStorage.setItem(
           PROFILE_KEY,
           r.profile || ''
-        ).catch(() => {});
+        ).catch(() => { });
 
         addMessage({
           id: ++nextId,
@@ -623,7 +626,7 @@ export default function App() {
     AsyncStorage.setItem(
       INTAKE_DONE_KEY,
       '1'
-    ).catch(() => {});
+    ).catch(() => { });
 
     setScreen('chat');
   }, []);
@@ -648,11 +651,11 @@ export default function App() {
 
     AsyncStorage.removeItem(
       INTAKE_DONE_KEY
-    ).catch(() => {});
+    ).catch(() => { });
 
     AsyncStorage.removeItem(
       PROFILE_KEY
-    ).catch(() => {});
+    ).catch(() => { });
 
     await resetConversation();
 
@@ -892,8 +895,8 @@ export default function App() {
                           style={[
                             st.langDropText,
                             lang ===
-                              l.code &&
-                              st.langDropTextActive,
+                            l.code &&
+                            st.langDropTextActive,
                           ]}
                         >
                           {l.label}
@@ -1117,8 +1120,8 @@ export default function App() {
                 >
                   {health?.stage
                     ? L[lang].prep(
-                        health.stage
-                      )
+                      health.stage
+                    )
                     : L[lang].conn}
                 </Text>
               </View>
@@ -1328,22 +1331,22 @@ export default function App() {
               />
 
               {sending && (
-  <View style={st.processingPill}>
-    <View style={st.processingDots}>
-      <View style={st.processingDot} />
-      <View style={st.processingDot} />
-      <View style={st.processingDot} />
-    </View>
+                <View style={st.processingPill}>
+                  <View style={st.processingDots}>
+                    <View style={st.processingDot} />
+                    <View style={st.processingDot} />
+                    <View style={st.processingDot} />
+                  </View>
 
-    <Text style={st.processingText}>
-      Retrieving evidence & generating…
-    </Text>
+                  <Text style={st.processingText}>
+                    Retrieving evidence & generating…
+                  </Text>
 
-    <Pressable onPress={cancel} style={st.processingCancel}>
-      <Text style={st.processingCancelText}>Cancel</Text>
-    </Pressable>
-  </View>
-)}
+                  <Pressable onPress={cancel} style={st.processingCancel}>
+                    <Text style={st.processingCancelText}>Cancel</Text>
+                  </Pressable>
+                </View>
+              )}
 
               {suggestions.length > 0 &&
                 !sending &&
@@ -1446,8 +1449,8 @@ export default function App() {
                         style={[
                           st.send,
                           !canSend &&
-                            !sending &&
-                            st.sendOff,
+                          !sending &&
+                          st.sendOff,
                         ]}
                         onPress={
                           sending
@@ -1530,74 +1533,74 @@ const st = StyleSheet.create({
     flex: 1,
   },
   processingPill: {
-  position: Platform.OS === 'web' ? 'absolute' : 'relative',
+    position: Platform.OS === 'web' ? 'absolute' : 'relative',
 
-  left: Platform.OS === 'web' ? 24 : undefined,
-  bottom: Platform.OS === 'web' ? 104 : undefined,
+    left: Platform.OS === 'web' ? 24 : undefined,
+    bottom: Platform.OS === 'web' ? 140 : undefined,
 
-  width: Platform.OS === 'web'
-    ? 'calc(100% - 48px)'
-    : '92%',
+    width: Platform.OS === 'web'
+      ? 'calc(100% - 48px)'
+      : '92%',
 
-  maxWidth: 1100,
-  alignSelf: 'center',
+    maxWidth: 1100,
+    alignSelf: 'center',
 
-  minHeight: 42,
+    minHeight: 42,
 
-  flexDirection: 'row',
-  alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
 
-  paddingHorizontal: 16,
+    paddingHorizontal: 16,
 
-  backgroundColor: 'rgba(7, 31, 27, 0.96)',
+    backgroundColor: 'rgba(7, 31, 27, 0.96)',
 
-  borderWidth: 1,
-  borderColor: 'rgba(134,239,172,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(134,239,172,0.18)',
 
-  borderRadius: 16,
+    borderRadius: 16,
 
-  zIndex: 900,
-  elevation: 10,
+    zIndex: 900,
+    elevation: 10,
 
-  ...Platform.select({
-    web: {
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-    },
-  }),
-},
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+      },
+    }),
+  },
 
-processingDots: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 4,
-  marginRight: 10,
-},
+  processingDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginRight: 10,
+  },
 
-processingDot: {
-  width: 5,
-  height: 5,
-  borderRadius: 999,
-  backgroundColor: '#86efac',
-},
+  processingDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: '#86efac',
+  },
 
-processingText: {
-  flex: 1,
-  color: '#b8ccc5',
-  fontSize: 12,
-  fontWeight: '600',
-},
+  processingText: {
+    flex: 1,
+    color: '#b8ccc5',
+    fontSize: 12,
+    fontWeight: '600',
+  },
 
-processingCancel: {
-  paddingHorizontal: 10,
-  paddingVertical: 6,
-},
+  processingCancel: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
 
-processingCancelText: {
-  color: '#fb7185',
-  fontSize: 12,
-  fontWeight: '800',
-},
+  processingCancelText: {
+    color: '#fb7185',
+    fontSize: 12,
+    fontWeight: '800',
+  },
 
   /* ----------------------------------------------------------
      HEADER
@@ -1630,6 +1633,7 @@ processingCancelText: {
 
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
 
     paddingHorizontal:
       Platform.OS === 'web'
@@ -1656,8 +1660,10 @@ processingCancelText: {
   },
 
   brandArea: {
-    flex: 1,
-    minWidth: 0,
+    flex: Platform.OS === 'web' ? 1 : 0,
+    width: Platform.OS === 'web' ? 'auto' : '100%',
+    minWidth: 150,
+    marginBottom: Platform.OS === 'web' ? 0 : 4,
   },
 
   titleLogoRow: {
@@ -2141,7 +2147,7 @@ processingCancelText: {
   ---------------------------------------------------------- */
 
   listContent: {
-    paddingTop: 20,
+    paddingTop: Platform.OS === 'web' ? 160 : 20,
     paddingBottom: 20,
 
     flexGrow: 1,
@@ -2407,7 +2413,7 @@ processingCancelText: {
 
     paddingTop: 13,
 
-    paddingBottom: 18,
+    paddingBottom: Platform.OS === 'web' ? 160 : 18,
 
     gap: 10,
 
@@ -2470,49 +2476,49 @@ processingCancelText: {
   ---------------------------------------------------------- */
 
   composerContainer: {
-  position: Platform.OS === 'web' ? 'absolute' : 'relative',
+    position: Platform.OS === 'web' ? 'absolute' : 'relative',
 
-  left: Platform.OS === 'web' ? 0 : undefined,
-  right: Platform.OS === 'web' ? 0 : undefined,
-  bottom: Platform.OS === 'web' ? 8 : undefined,
+    left: Platform.OS === 'web' ? 0 : undefined,
+    right: Platform.OS === 'web' ? 0 : undefined,
+    bottom: Platform.OS === 'web' ? 8 : undefined,
 
-  paddingHorizontal: Platform.OS === 'web' ? 20 : 12,
-  paddingTop: 8,
-  paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    paddingHorizontal: Platform.OS === 'web' ? 20 : 12,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
 
-  backgroundColor: 'transparent',
-  alignItems: 'center',
+    backgroundColor: 'transparent',
+    alignItems: 'center',
 
-  zIndex: 1000,
-  elevation: 20,
-},
+    zIndex: 1000,
+    elevation: 20,
+  },
 
   composerBox: {
-  width: '100%',
-  maxWidth: 920,
-  minHeight: 108,
+    width: '100%',
+    maxWidth: 920,
+    minHeight: 108,
 
-  backgroundColor: 'rgba(9, 32, 27, 0.96)',
-  borderRadius: 24,
+    backgroundColor: 'rgba(9, 32, 27, 0.96)',
+    borderRadius: 24,
 
-  borderWidth: 1,
-  borderColor: 'rgba(167,243,208,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(167,243,208,0.18)',
 
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 8 },
-  shadowOpacity: 0.30,
-  shadowRadius: 18,
-  elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.30,
+    shadowRadius: 18,
+    elevation: 8,
 
-  paddingTop: 7,
+    paddingTop: 7,
 
-  ...Platform.select({
-    web: {
-      backdropFilter: 'blur(22px)',
-      WebkitBackdropFilter: 'blur(22px)',
-    },
-  }),
-},
+    ...Platform.select({
+      web: {
+        backdropFilter: 'blur(22px)',
+        WebkitBackdropFilter: 'blur(22px)',
+      },
+    }),
+  },
 
   input: {
     minHeight: 48,

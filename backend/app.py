@@ -161,24 +161,11 @@ LAST_CONTEXT = {"topics": []}
 REFUSAL = ("I could not find sufficiently relevant evidence in the uploaded "
            "PM-JAY documents to answer this safely.")
 
-REFUSAL_HELPFUL = (REFUSAL + "\n\nYou can try one of these instead:\n"
-                   "- What is the PM-JAY cancer pre-authorisation process?\n"
-                   "- What documents are required for PM-JAY pre-authorisation?\n"
-                   "- What is the PM-JAY claim settlement process?\n"
-                   "- How can a PM-JAY beneficiary file a grievance?\n"
-                   "- What does the discharge summary contain?")
+REFUSAL_HELPFUL = (REFUSAL + "\n\nPlease try asking your question differently.")
 
 CLARIFY_MESSAGE = (
     "I can answer that from the uploaded PM-JAY documents, but I need to know "
-    "which topic you mean. Please ask about one of these:\n\n"
-    "- **Pre-authorisation** — e.g. \"What is the pre-authorisation process?\"\n"
-    "- **Claim settlement** — e.g. \"What is the claim settlement process?\"\n"
-    "- **Grievance redressal** — e.g. \"How can a beneficiary file a grievance?\"\n"
-    "- **Hospital empanelment** — e.g. \"What are the empanelment criteria?\"\n"
-    "- **Hospital transactions / beneficiary identification**\n"
-    "- **Discharge summary** — e.g. \"What does the discharge summary contain?\"\n"
-    "- **Health benefit packages** — e.g. \"Which cancer packages are covered?\"\n\n"
-    "For example: \"Who is eligible for PM-JAY pre-authorisation?\"")
+    "which topic you mean.")
 
 LOW_CONFIDENCE_NOTE = (
     "⚠ Note: the evidence for this question matched weakly, so please verify "
@@ -312,14 +299,6 @@ SMALL_TALK_PATTERNS = {
 SMALL_TALK_ANSWERS = {
     "greeting": (
         "Hello! 👋 I'm the PM-JAY assistant.\n\n"
-        "You can ask me about:\n"
-        "- Cancer pre-authorisation process and required documents\n"
-        "- Claim settlement and adjudication\n"
-        "- Grievance redressal\n"
-        "- Hospital empanelment\n"
-        "- Hospital transactions / beneficiary identification\n"
-        "- Discharge summary\n"
-        "- Health benefit packages\n\n"
         "All answers come only from the uploaded PM-JAY documents, with [S1]/[S2] evidence."),
     "thanks": ("You're welcome! 😊 If you have more questions about PM-JAY — "
                "pre-authorisation, claims, grievances, empanelment, discharge or "
@@ -339,14 +318,8 @@ SMALL_TALK_ANSWERS = {
         "- Invent rules that aren't in the documents\n\n"
         "Try asking: \"What is the PM-JAY cancer pre-authorisation process?\""),
     "help": (
-        "Here are example questions you can ask:\n"
-        "1. What is the PM-JAY cancer pre-authorisation process?\n"
-        "2. What documents are required for PM-JAY pre-authorisation?\n"
-        "3. What happens after the pre-authorisation request is submitted?\n"
-        "4. What is the PM-JAY claim settlement process?\n"
-        "5. How can a PM-JAY beneficiary file a grievance?\n"
-        "6. What does the discharge summary contain?\n\n"
-        "Type any of these or ask in your own words."),
+        "You can ask me anything about PM-JAY.\n\n"
+        "Type any questions or ask in your own words."),
     "ack": ("Got it. 👍 What would you like to know about PM-JAY? "
             "(For example: pre-authorisation process, claim settlement, grievance "
             "redressal, empanelment, discharge summary, or benefit packages.)"),
